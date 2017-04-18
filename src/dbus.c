@@ -137,9 +137,10 @@ int dbus_marshall_property(
   const char    *property
 ) {
   int             type = 0;
-  char            *ss = NULL;
-  DBusMessageIter *iter = NULL;
+  DBusMessageIter *iter = NULL, arr;
   DBusBasicValue  value;
+  char            *s = NULL;
+  StringBuilder   *sb = NULL;
 
   iter = dbus_get_property(
                       service,
@@ -152,9 +153,29 @@ int dbus_marshall_property(
     return FAIL;
   }
   
-  dbus_message_iter_get_basic(iter, &value);
   type = dbus_message_iter_get_arg_type(iter);
-  
+
+  // get string array
+  if (DBUS_TYPE_ARRAY == type) {
+    dbus_message_iter_recurse(iter, &arr);
+    sb = sb_create();
+    while (DBUS_TYPE_INVALID != (type = dbus_message_iter_get_arg_type(&arr))) {
+      if (DBUS_TYPE_STRING == type) {
+        if (!sb_empty(sb))
+          sb_append(sb, ",");
+        dbus_message_iter_get_basic(&arr, &s);
+        sb_append(sb, s);
+      }
+      dbus_message_iter_next(&arr);
+    }
+
+    SET_STR_RESULT(result, sb_concat(sb));
+    sb_free(sb);
+    return SUCCEED;
+  }
+
+  // get basic type
+  dbus_message_iter_get_basic(iter, &value);
   switch (type) {
   case DBUS_TYPE_STRING:
     SET_STR_RESULT(result, strdup(value.str));

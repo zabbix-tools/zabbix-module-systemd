@@ -4,22 +4,27 @@ static int SYSTEMD_MODVER(AGENT_REQUEST*, AGENT_RESULT*);
 static int SYSTEMD_UNIT(AGENT_REQUEST*, AGENT_RESULT*);
 static int SYSTEMD_UNIT_DISCOVERY(AGENT_REQUEST*, AGENT_RESULT*);
 
-/* Define custom keys */
-static ZBX_METRIC keys[] =
+ZBX_METRIC *zbx_module_item_list()
 {
-	{ "systemd.modver",         0,              SYSTEMD_MODVER,         NULL },
-  { "systemd.unit",           CF_HAVEPARAMS,  SYSTEMD_UNIT,           "network,activestate" },
-  { "systemd.unit.discovery", 0,              SYSTEMD_UNIT_DISCOVERY, NULL },
-	{ NULL }
-};
+  static ZBX_METRIC keys[] =
+  {
+    { "systemd.modver",         0,              SYSTEMD_MODVER,         NULL },
+    { "systemd.unit",           CF_HAVEPARAMS,  SYSTEMD_UNIT,           "network,activestate" },
+    { "systemd.unit.discovery", 0,              SYSTEMD_UNIT_DISCOVERY, NULL },
+    { NULL }
+  };
 
-ZBX_METRIC	*zbx_module_item_list()     { return keys; }
-int         zbx_module_api_version()    { return ZBX_MODULE_API_VERSION; }
+  return keys;
+}
+
+int zbx_module_api_version() {
+  return ZBX_MODULE_API_VERSION;
+}
 
 int zbx_module_init()
 {
+    zabbix_log(LOG_LEVEL_INFORMATION, "starting module %s", PACKAGE_STRING);
     systemd_connect();
-    zabbix_log(LOG_LEVEL_INFORMATION, "starting agent module %s", PACKAGE_STRING);
     return ZBX_MODULE_OK;
 }
 
@@ -33,7 +38,7 @@ int timeout = 3000;
 void zbx_module_item_timeout(int t)
 {
     timeout = t * 1000;
-    zabbix_log(LOG_LEVEL_DEBUG, "set timeout to %ims", timeout);
+    zabbix_log(LOG_LEVEL_DEBUG, LOG_PREFIX "set timeout to %ims", timeout);
 }
 
 static int SYSTEMD_MODVER(AGENT_REQUEST *request, AGENT_RESULT *result)
@@ -42,6 +47,7 @@ static int SYSTEMD_MODVER(AGENT_REQUEST *request, AGENT_RESULT *result)
     return SYSINFO_RET_OK;
 }
 
+// systemd.unit[<unit_name>,<property=SubState>]
 static int SYSTEMD_UNIT(AGENT_REQUEST *request, AGENT_RESULT *result)
 {
   char            *unit, *property;
@@ -78,6 +84,7 @@ static int SYSTEMD_UNIT(AGENT_REQUEST *request, AGENT_RESULT *result)
   return res;
 }
 
+// systemd.unit.discovery[]
 static int SYSTEMD_UNIT_DISCOVERY(AGENT_REQUEST *request, AGENT_RESULT *result)
 {
   DBusMessage     *msg = NULL;
@@ -154,7 +161,7 @@ static int SYSTEMD_UNIT_DISCOVERY(AGENT_REQUEST *request, AGENT_RESULT *result)
       i++;
     }
     zbx_json_close(&j);
-    dbus_message_iter_next (&arr);
+    dbus_message_iter_next(&arr);
   }
 
   dbus_message_unref(msg);

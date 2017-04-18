@@ -5,6 +5,9 @@
 #include <unistd.h>
 #include <errno.h>
 
+// string builder
+#include "sb.h"
+
 // Zabbix source headers
 #define HAVE_TIME_H 1
 #include <sysinc.h>

@@ -4,7 +4,9 @@ libzbxsystemd_la_SOURCES = \
 	libzbxsystemd.h \
 	libzbxsystemd.c \
 	systemd.c \
-	dbus.c
+	dbus.c \
+	sb.c \
+	sb.h
 
 libzbxsystemd_la_CFLAGS = \
 	$(DEBUG_CPPFLAGS) \
