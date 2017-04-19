@@ -10,7 +10,9 @@ clean-local:
 	rm -vf libzbxsystemd.mod libzbxsystemd.pp
 
 install-data-local: libzbxsystemd.pp
-	semodule -v -i libzbxsystemd.pp
+	$(INSTALL) -m 0644 \
+		libzbxsystemd.pp \
+		$(datarootdir)/selinux/packages/libzbxsystemd.pp
 
 # .PHONY: all clean install
 

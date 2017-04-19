@@ -9,7 +9,7 @@ This project is a work in progress.
 ```bash
 $ ./configure --with-zabbix=/usr/src/zabbix-3.2.4
 $ make
-$ make sysconfdir=/etc libdir=/usr/lib64 install
+$ sudo make prefix=/usr sysconfdir=/etc libdir=/usr/lib64 install
 ```
 
 ## Keys
