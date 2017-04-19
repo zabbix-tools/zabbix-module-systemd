@@ -259,6 +259,10 @@ int dbus_marshall_property(
   case DBUS_TYPE_INT32:
     SET_UI64_RESULT(result, value.u32);
     return SUCCEED;
+  
+  case DBUS_TYPE_DOUBLE:
+    SET_DBL_RESULT(result, value.dbl);
+    return SUCCEED;
   }
 
   SET_MSG_RESULT(result, zbx_dsprintf(NULL, "unsupported value type: %c", type));
