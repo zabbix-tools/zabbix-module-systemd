@@ -16,6 +16,8 @@ Vagrant.configure("2") do |config|
       dbus-devel \
       gdb \
       libtool \
+      policycoreutils-python \
+      setools-console \
       strace \
       vim-enhanced \
       zabbix-agent \

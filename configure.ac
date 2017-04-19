@@ -34,6 +34,7 @@ dnl
 AC_CONFIG_FILES([
  Makefile
  src/Makefile
+ selinux/Makefile
 ])
 AC_OUTPUT
 
@@ -52,15 +53,11 @@ if test "x$ZABBIX_CPPFLAGS" != "x"; then
   echo "    zabbix:              ${ZABBIX_CPPFLAGS}"
 fi
 
-if test "x$PYTHON_CPPFLAGS" != "x"; then
-  echo "    python:              ${PYTHON_CPPFLAGS}"
-fi
-
 echo
 echo "************************************************************"
 echo "*                 Now run '${am_make} install'                   *"
 echo "*                                                          *"
-echo "*            Thank you for using libzbxpython!             *"
+echo "*            Thank you for using libzbxsystemd!            *"
 echo "*               <http://cavaliercoder.com>                 *"
 echo "************************************************************"
 echo

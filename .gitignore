@@ -9,8 +9,10 @@ __pycache__/
 *.la
 *.lineno
 *.lo
+*.mod
 *.o
 *.orig
+*.pp
 *.pyc
 *.rpm
 *.so

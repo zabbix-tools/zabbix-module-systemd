@@ -1,7 +1,8 @@
 ACLOCAL_AMFLAGS = -Im4
 
 SUBDIRS = \
-	src
+	src \
+	selinux
 
 EXTRA_DIST = \
 	README.md
