@@ -9,7 +9,7 @@ ZBX_METRIC *zbx_module_item_list()
   static ZBX_METRIC keys[] =
   {
     { "systemd.modver",         0,              SYSTEMD_MODVER,         NULL },
-    { "systemd.unit",           CF_HAVEPARAMS,  SYSTEMD_UNIT,           "network,activestate" },
+    { "systemd.unit",           CF_HAVEPARAMS,  SYSTEMD_UNIT,           "dbus.socket,Socket,MaxConnections" },
     { "systemd.unit.discovery", 0,              SYSTEMD_UNIT_DISCOVERY, NULL },
     { NULL }
   };
@@ -47,35 +47,45 @@ static int SYSTEMD_MODVER(AGENT_REQUEST *request, AGENT_RESULT *result)
     return SYSINFO_RET_OK;
 }
 
-// systemd.unit[<unit_name>,<property=SubState>]
+// systemd.unit[<unit_name>,<interface=Unit>,<property=Result>]
 static int SYSTEMD_UNIT(AGENT_REQUEST *request, AGENT_RESULT *result)
 {
-  char            *unit, *property;
-  char            path[1024], value[1024];
-  DBusMessageIter *iter = NULL;
+  const char      *unit, *interface, *property;
+  char            path[4096], buf[DBUS_MAXIMUM_NAME_LENGTH+1];
   int             res = SYSINFO_RET_FAIL;
 
-  if (1 > request->nparam || 2 < request->nparam) {
+  if (1 > request->nparam || 3 < request->nparam) {
     SET_MSG_RESULT(result, strdup("Invalid number of parameters."));
     return SYSINFO_RET_FAIL;
   }
- 
+  
+  // resolve unit name to object path
   unit = get_rparam(request, 0);
-  property = get_rparam(request, 1);
-  if (NULL == property || '\0' == *property) {
-    property = "SubState";
-  }
-
   if (FAIL == systemd_get_unit(path, sizeof(path), unit)) {
     SET_MSG_RESULT(result, strdup("unit not found"));
     return res;
   }
 
+  // resolve full interface name
+  interface = get_rparam(request, 1);
+  if (NULL == interface || '\0' == *interface) {
+    interface = SYSTEMD_SERVICE_NAME ".Unit";
+  } else {
+    zbx_snprintf(buf, sizeof(buf), SYSTEMD_SERVICE_NAME ".%s", interface);
+    interface = &buf[0];
+  }
+
+  // resolve property name
+  property = get_rparam(request, 2);
+  if (NULL == property || '\0' == *property)
+    property = "ActiveState";
+
+  // get value
   if (0 == dbus_marshall_property(
     result,
-    SYSTEMD_SERVICE,
+    SYSTEMD_SERVICE_NAME,
     path,
-    SYSTEMD_UNIT_INTERFACE,
+    interface,
     property
   )) {
     res = SYSINFO_RET_OK;
@@ -96,7 +106,7 @@ static int SYSTEMD_UNIT_DISCOVERY(AGENT_REQUEST *request, AGENT_RESULT *result)
 
   // send method call
   msg = dbus_message_new_method_call(
-    SYSTEMD_SERVICE,
+    SYSTEMD_SERVICE_NAME,
     SYSTEMD_ROOT_NODE,
     SYSTEMD_MANAGER_INTERFACE,
     "ListUnits");
@@ -154,6 +164,11 @@ static int SYSTEMD_UNIT_DISCOVERY(AGENT_REQUEST *request, AGENT_RESULT *result)
       
       case 6:
         zbx_json_addstring(&j, "{#UNIT.OBJECTPATH}", value.str, ZBX_JSON_TYPE_STRING);
+        
+        // while we know the object path, lookup additional properties
+        dbus_get_property_json(&j, "{#UNIT.FRAGMENTPATH}", value.str, "FragmentPath");
+        dbus_get_property_json(&j, "{#UNIT.UNITFILESTATE}", value.str, "UnitFileState");
+        dbus_get_property_json(&j, "{#UNIT.FOLLOWING}", value.str, "Following");
         break;
       }
 

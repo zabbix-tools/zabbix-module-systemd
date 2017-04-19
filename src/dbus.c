@@ -80,7 +80,16 @@ DBusMessageIter* dbus_get_property(
   DBusMessageIter args;
   DBusMessageIter *iter = NULL;
 
-  zabbix_log(LOG_LEVEL_DEBUG, LOG_PREFIX "search object path: %s", path);
+  zabbix_log(LOG_LEVEL_DEBUG, 
+                    LOG_PREFIX "getting property:\n"
+                    "\tservice: %s\n"
+                    "\tobject path: %s\n"
+                    "\tinterface: %s\n"
+                    "\tproperty: %s",
+                    service,
+                    path,
+                    interface,
+                    property);
 
   // create method call
   msg = dbus_message_new_method_call(
@@ -123,6 +132,62 @@ DBusMessageIter* dbus_get_property(
   return iter;
 }
 
+int dbus_get_property_string(
+  char          *s,
+  const size_t  n,
+  const char    *service,
+  const char    *path,
+  const char    *interface,
+  const char    *property
+) {
+  DBusMessageIter *iter = NULL;
+  char            *value = NULL;
+
+  iter = dbus_get_property(
+                      service,
+                      path,
+                      interface,
+                      property);
+  
+  if (NULL == iter)
+    return FAIL;
+  
+  if (DBUS_TYPE_STRING != dbus_message_iter_get_arg_type(iter))
+    return FAIL;
+  
+  dbus_message_iter_get_basic(iter, &value);
+  zbx_strlcpy(s, value, n);
+  return SUCCEED;
+}
+
+/*
+ * dbus_get_property_json appends the value of the given property as a key/val
+ * pair tothe given discovery json document.
+ */
+int dbus_get_property_json(
+              struct zbx_json *j,
+              const char      *key,
+              const char      *path,
+              const char      *property
+) {
+  char buf[1024];
+  buf[0] = '\0';
+  if (SUCCEED == dbus_get_property_string(
+    buf,
+    sizeof(buf),
+    SYSTEMD_SERVICE_NAME,
+    path,
+    SYSTEMD_UNIT_INTERFACE,
+    property
+  )) {
+    if ('\0' != buf[0])
+      zbx_json_addstring(j, key, buf, ZBX_JSON_TYPE_STRING);
+      return SUCCEED;
+  }
+
+  return FAIL;
+}
+
 /*
  * dbus_marshall_property gets the value of a d-bus property and marshalls it
  * into a Zabbix AGENT_RESULT struct.
@@ -155,7 +220,7 @@ int dbus_marshall_property(
   
   type = dbus_message_iter_get_arg_type(iter);
 
-  // get string array
+  // marshal string array
   if (DBUS_TYPE_ARRAY == type) {
     dbus_message_iter_recurse(iter, &arr);
     sb = sb_create();
@@ -174,7 +239,7 @@ int dbus_marshall_property(
     return SUCCEED;
   }
 
-  // get basic type
+  // marshal basic type
   dbus_message_iter_get_basic(iter, &value);
   switch (type) {
   case DBUS_TYPE_STRING:
@@ -186,7 +251,13 @@ int dbus_marshall_property(
     return SUCCEED;
 
   case DBUS_TYPE_UINT64:
+  case DBUS_TYPE_INT64:
     SET_UI64_RESULT(result, value.u64);
+    return SUCCEED;
+
+  case DBUS_TYPE_UINT32:
+  case DBUS_TYPE_INT32:
+    SET_UI64_RESULT(result, value.u32);
     return SUCCEED;
   }
 

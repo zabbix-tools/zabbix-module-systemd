@@ -60,7 +60,7 @@ int systemd_get_unit(char *s, size_t n, const char* unit)
 
   // create method call
   msg = dbus_message_new_method_call(
-    SYSTEMD_SERVICE,
+    SYSTEMD_SERVICE_NAME,
     SYSTEMD_ROOT_NODE,
     SYSTEMD_MANAGER_INTERFACE,
     "GetUnit");
@@ -84,7 +84,7 @@ int systemd_get_unit(char *s, size_t n, const char* unit)
   }
   
   dbus_message_iter_get_basic(&args, &val);
-  zbx_strlcpy(s, val, n);
+  zbx_strlcpy(s, val, n); // WARNING: object paths are unlimited
   dbus_message_unref(msg);
 
   return SUCCEED;

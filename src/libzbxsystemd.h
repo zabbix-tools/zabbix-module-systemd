@@ -40,6 +40,20 @@ DBusMessageIter   *dbus_get_property(
                                 const char*,
                                 const char*);
 
+int dbus_get_property_string(
+                char          *s,
+                const size_t  n,
+                const char    *service,
+                const char    *path,
+                const char    *interface,
+                const char    *property); 
+
+int dbus_get_property_json(
+                struct zbx_json *j,
+                const char      *key,
+                const char      *path,
+                const char      *property);
+
 int dbus_marshall_property(
                 AGENT_RESULT*,
                 const char*,
@@ -48,15 +62,14 @@ int dbus_marshall_property(
                 const char*);
 
 // systemd api
-#define SYSTEMD_SERVICE               "org.freedesktop.systemd1"
+#define SYSTEMD_SERVICE_NAME          "org.freedesktop.systemd1"
 #define SYSTEMD_ROOT_NODE             "/org/freedesktop/systemd1"
-#define SYSTEMD_MANAGER_INTERFACE     "org.freedesktop.systemd1.Manager"
-#define SYSTEMD_UNIT_INTERFACE        "org.freedesktop.systemd1.Unit"
+#define SYSTEMD_MANAGER_INTERFACE     SYSTEMD_SERVICE_NAME ".Manager"
+#define SYSTEMD_UNIT_INTERFACE        SYSTEMD_SERVICE_NAME ".Unit"
 
 DBusConnection *conn;
 
 int systemd_connect();
 int systemd_get_unit(char *s, size_t n, const char* unit);
-
 
 #endif
