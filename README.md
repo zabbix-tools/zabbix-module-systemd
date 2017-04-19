@@ -15,17 +15,20 @@ $ sudo make prefix=/usr sysconfdir=/etc libdir=/usr/lib64 install
 ## Keys
 
 ```
-systemd.unit[<unit>,<property>]   return the given property of the given unit
-                                  property is case sensitive and defaults to
-                                  'SubState'
+systemd[<property>]                         return the given property of the
+                                            systemd Manager interface
 
-systemd.unit.discovery[]          discovery all known units
+systemd.unit[<unit>,<interface>,<property>] return the given property of the
+                                            given interface of the given unit
+                                            name
 
-systemd.modver[]                  version of the loaded module
+systemd.unit.discovery[]                    discovery all known units
+
+systemd.modver[]                            version of the loaded module
 ```
 
-For a list of available unit properties, see the
-[D-Bus API of systemd/PID 1](https://www.freedesktop.org/wiki/Software/systemd/dbus#unitobjects).
+For a list of available unit interfaces and properties, see the
+[D-Bus API of systemd/PID 1](https://www.freedesktop.org/wiki/Software/systemd/dbus).
 
 ## License
 

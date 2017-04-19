@@ -1,6 +1,7 @@
 #include "libzbxsystemd.h"
 
 static int SYSTEMD_MODVER(AGENT_REQUEST*, AGENT_RESULT*);
+static int SYSTEMD_MANAGER(AGENT_REQUEST *request, AGENT_RESULT *result);
 static int SYSTEMD_UNIT(AGENT_REQUEST*, AGENT_RESULT*);
 static int SYSTEMD_UNIT_DISCOVERY(AGENT_REQUEST*, AGENT_RESULT*);
 
@@ -9,7 +10,8 @@ ZBX_METRIC *zbx_module_item_list()
   static ZBX_METRIC keys[] =
   {
     { "systemd.modver",         0,              SYSTEMD_MODVER,         NULL },
-    { "systemd.unit",           CF_HAVEPARAMS,  SYSTEMD_UNIT,           "dbus.socket,Socket,MaxConnections" },
+    { "systemd",                CF_HAVEPARAMS,  SYSTEMD_MANAGER,        "Version" },
+    { "systemd.unit",           CF_HAVEPARAMS,  SYSTEMD_UNIT,           "dbus.service,Service,Result" },
     { "systemd.unit.discovery", 0,              SYSTEMD_UNIT_DISCOVERY, NULL },
     { NULL }
   };
@@ -45,6 +47,36 @@ static int SYSTEMD_MODVER(AGENT_REQUEST *request, AGENT_RESULT *result)
 {
     SET_STR_RESULT(result, strdup(PACKAGE_STRING ", compiled with Zabbix " ZABBIX_VERSION));
     return SYSINFO_RET_OK;
+}
+
+// systemd[<property=Version>]
+static int SYSTEMD_MANAGER(AGENT_REQUEST *request, AGENT_RESULT *result)
+{
+  const char      *property;
+  int             res = SYSINFO_RET_FAIL;
+
+  if (1 < request->nparam) {
+    SET_MSG_RESULT(result, strdup("Invalid number of parameters."));
+    return SYSINFO_RET_FAIL;
+  }
+  
+  // resolve property name
+  property = get_rparam(request, 0);
+  if (NULL == property || '\0' == *property)
+    property = "Version";
+
+  // get value
+  if (0 == dbus_marshall_property(
+    result,
+    SYSTEMD_SERVICE_NAME,
+    SYSTEMD_ROOT_NODE,
+    SYSTEMD_MANAGER_INTERFACE,
+    property
+  )) {
+    res = SYSINFO_RET_OK;
+  }
+  
+  return res;
 }
 
 // systemd.unit[<unit_name>,<interface=Unit>,<property=Result>]
