@@ -1,4 +1,6 @@
 __pycache__/
+.deps/
+.libs/
 .vscode/
 *.build
 *.changes
@@ -25,8 +27,6 @@ __pycache__/
 /m4/
 /python/build/
 /python/dist/
-/src/.deps/
-/src/.libs/
 /src/**/Makefile
 /zabbix-*/
 aclocal.m4

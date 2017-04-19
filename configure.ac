@@ -1,4 +1,4 @@
-AC_INIT([libzbxsystemd], [1.0.0], [ryan@cavaliercoder.com])
+AC_INIT([zabbix-module-systemd], [1.0.0], [ryan@cavaliercoder.com])
 AM_INIT_AUTOMAKE([-Wall -Werror -Wno-portability foreign])
 m4_pattern_allow([AM_PROG_AR])
 AM_PROG_AR
@@ -33,7 +33,7 @@ dnl output
 dnl
 AC_CONFIG_FILES([
  Makefile
- src/Makefile
+ src/modules/systemd/Makefile
  selinux/Makefile
 ])
 AC_OUTPUT

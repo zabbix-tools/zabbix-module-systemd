@@ -25,7 +25,7 @@ int zbx_module_api_version() {
 
 int zbx_module_init()
 {
-    zabbix_log(LOG_LEVEL_INFORMATION, "starting module %s", PACKAGE_STRING);
+    zabbix_log(LOG_LEVEL_DEBUG, LOG_PREFIX "starting v%s", PACKAGE_VERSION);
     systemd_connect();
     return ZBX_MODULE_OK;
 }
@@ -134,7 +134,7 @@ static int SYSTEMD_UNIT_DISCOVERY(AGENT_REQUEST *request, AGENT_RESULT *result)
   struct zbx_json j; 
   DBusBasicValue  value;
   int             res = SYSINFO_RET_FAIL;
-  int             type = 0, i = 0, n = 0;
+  int             type = 0, i = 0;
 
   // send method call
   msg = dbus_message_new_method_call(

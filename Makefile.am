@@ -1,11 +1,18 @@
 ACLOCAL_AMFLAGS = -Im4
 
 SUBDIRS = \
-	src \
+	src/modules/systemd \
 	selinux
 
 EXTRA_DIST = \
-	README.md
+	README.md \
+	COPYING \
+	conf/libzbxsystemd.conf
+
+install-data-hook:
+	$(INSTALL) -d $(DESTDIR)$(docdir)-$(PACKAGE_VERSION)
+	$(INSTALL) -m 0644 README.md $(DESTDIR)$(docdir)-$(PACKAGE_VERSION)/README.md
+	$(INSTALL) -m 0644 COPYING $(DESTDIR)$(docdir)-$(PACKAGE_VERSION)/COPYING
 
 rpm: dist
 	mkdir -p ~/rpmbuild/SPECS

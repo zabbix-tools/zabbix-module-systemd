@@ -9,27 +9,27 @@ libzbxsystemd_la_SOURCES = \
 	sb.h
 
 libzbxsystemd_la_CFLAGS = \
-	$(DEBUG_CPPFLAGS) \
 	$(DBUS_CPPFLAGS) \
-	$(ZABBIX_CPPFLAGS) \
-	$(libzbxsystemd_CPPFLAGS)
+	$(ZABBIX_CPPFLAGS)
 
 libzbxsystemd_la_LDFLAGS = \
 	-shared \
 	-module \
 	-avoid-version \
-	$(DBUS_LDFLAGS) \
-	$(libzbxsystemd_LIBS)
+	$(DBUS_LDFLAGS)
 
-# install module into correct location
-install-exec-hook: install-agent-config
-	mkdir -p $(DESTDIR)$(libdir)/zabbix/modules/
+install-data-hook: install-module install-module-conf
+
+# move module into correct location
+install-module:
+	$(MKDIR_P) $(DESTDIR)$(libdir)/zabbix/modules/
 	rm -f $(DESTDIR)$(libdir)/libzbxsystemd.la
 	mv -f $(DESTDIR)$(libdir)/libzbxsystemd.so \
 		$(DESTDIR)$(libdir)/zabbix/modules/libzbxsystemd.so
 
-# install module configuration file
-install-agent-config:
+# install config file
+install-module-conf:
 	$(MKDIR_P) $(DESTDIR)$(sysconfdir)/zabbix/zabbix_agentd.d
-	echo "LoadModule=libzbxsystemd.so" > \
-		$(DESTDIR)$(sysconfdir)/zabbix/zabbix_agentd.d/libzbxsystemd.conf
+	test -f "$(DESTDIR)$(sysconfdir)/zabbix/zabbix_agentd.d/libzbxsystemd.conf" || \
+		$(INSTALL) -m 0644 ../../../conf/libzbxsystemd.conf \
+			$(DESTDIR)$(sysconfdir)/zabbix/zabbix_agentd.d/libzbxsystemd.conf

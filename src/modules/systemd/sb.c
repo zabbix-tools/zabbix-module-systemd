@@ -27,7 +27,6 @@ int sb_empty(StringBuilder *sb)
  */
 int sb_append(StringBuilder *sb, const char *str)
 {
-	int				i = 0;
 	int				length = 0;
 	StringFragment	*frag = NULL;
 

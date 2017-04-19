@@ -42,7 +42,6 @@ int systemd_connect()
 int systemd_get_unit(char *s, size_t n, const char* unit)
 {
   DBusMessage     *msg = NULL;
-  DBusPendingCall *pending = NULL;
   DBusMessageIter args;
   const char      *val = NULL;
   char            buf[1024], *c = NULL;
