@@ -17,6 +17,7 @@ Vagrant.configure("2") do |config|
       gdb \
       libtool \
       policycoreutils-python \
+      rpm-build \
       setools-console \
       strace \
       vim-enhanced \
