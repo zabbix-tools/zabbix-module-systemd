@@ -5,6 +5,13 @@ the systemd D-Bus API for native and granular service monitoring.
 
 This project is a work in progress.
 
+## Download
+
+The following packages are available:
+
+- [Sources](http://s3.cavaliercoder.com/zabbix-contrib/release/zabbix-module-systemd-1.0.0.tar.gz)
+- [Zabbix 3.2 - EL7 x86_64 RPM](http://s3.cavaliercoder.com/zabbix-contrib/rhel/7/x86_64/zabbix-module-systemd-1.0.0-1.x86_64.rpm)
+
 ## Install
 
 ```bash

@@ -55,7 +55,6 @@ static int SYSTEMD_MODVER(AGENT_REQUEST *request, AGENT_RESULT *result)
 static int SYSTEMD_MANAGER(AGENT_REQUEST *request, AGENT_RESULT *result)
 {
   const char      *property;
-  int             res = SYSINFO_RET_FAIL;
 
   if (1 < request->nparam) {
     SET_MSG_RESULT(result, strdup("Invalid number of parameters."));
