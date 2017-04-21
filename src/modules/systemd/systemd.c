@@ -44,7 +44,7 @@ int systemd_get_unit(char *s, size_t n, const char* unit)
   DBusMessage     *msg = NULL;
   DBusMessageIter args;
   const char      *val = NULL;
-  char            buf[1024], *c = NULL;
+  char            buf[255], *c = NULL;
   int             type = 0;
 
   // qualify unit name if no extension given
@@ -87,4 +87,93 @@ int systemd_get_unit(char *s, size_t n, const char* unit)
   dbus_message_unref(msg);
 
   return SUCCEED;
+}
+
+/*
+ * systemd_get_service_path fills the given buffer with the first segment of the
+ * Service.ExecStart value for the given service object
+ */
+int systemd_get_service_path(char *s, size_t n, const char *path)
+{
+  DBusMessageIter *val;
+  DBusMessageIter arr, obj;
+  char *v = NULL;
+
+  val = dbus_get_property(
+                      SYSTEMD_SERVICE_NAME,
+                      path,
+                      SYSTEMD_SERVICE_INTERFACE,
+                      "ExecStart");
+  
+  if (NULL == val)
+    return FAIL;
+
+  // type: a(sasbttuii)
+  dbus_message_iter_recurse(val, &arr);   // -> array
+  dbus_message_iter_recurse(&arr, &obj);  // -> struct
+  dbus_message_iter_get_basic(&obj, &v);  // string
+
+  if (NULL == v)
+    return FAIL;
+
+  zbx_strlcpy(s, v, n);
+  return SUCCEED;
+}
+
+/*
+ * systemd_unit_is_service returns non-zero if the given object path is a
+ * systemd service unit.
+ */
+int systemd_unit_is_service(const char *path)
+{
+  // service objects paths are unbounded in length and end in '_2eservice'
+  int len = strnlen(path, 4096);
+  const char *ext = path + MAX(0, len - 10);
+  return (0 == strncmp(ext, "_2eservice", 11));  
+}
+
+/*
+ * systemd_service_state_code returns the status code for the given systemd
+ * service ActiveState property value or -1 if unknown.
+ */
+int systemd_service_state_code(const char *state)
+{
+  // Map systemd ActiveStates to status codes
+  // Code definitions aim to roughly balance LSB initscript codes and the Zabbix
+  // agent for Windows service status codes.
+  // https://www.zabbix.com/documentation/3.2/manual/config/items/itemtypes/zabbix_agent/win_keys
+  const int codes[] = { 0, 2, 5, 6, 8 };
+  const char *states[] = {
+    "active", "activating", "deactivating", "inactive", "failed",
+    NULL
+  };
+
+  for(int i = 0; states[i]; i++)
+    if (0 == strncmp(state, states[i], 13))
+      return codes[i];
+  
+  return -1;
+}
+
+/*
+ * systemd_service_startup_code returns the startup code for the given system
+ * service UnitFileState property value or -1 if unknown.
+ */
+int systemd_service_startup_code(const char *state)
+{
+  // Map systemd UnitFileStates to Zabbix service startup codes.
+  // Code definitions mimic the Windows service startup codes.
+  // https://www.zabbix.com/documentation/3.2/manual/config/items/itemtypes/zabbix_agent/win_keys
+  const int codes[] = { 0, 2, 0, 2, 3, 3, 0, 2, 4 };
+  const char *states[] = {
+    "enabled", "enabled-runtime", "linked", "linked-runtime", "masked",
+    "masked-runtime", "static", "disabled", "invalid",
+    NULL
+  };
+
+  for(int i = 0; states[i]; i++)
+    if (0 == strncmp(state, states[i], 13))
+      return codes[i];
+  
+  return -1;
 }

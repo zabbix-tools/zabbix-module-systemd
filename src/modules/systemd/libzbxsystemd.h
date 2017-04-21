@@ -17,6 +17,10 @@
 #include <zbxjson.h>
 #include <version.h>
 
+#ifndef MAX
+#define MAX(a, b)     ( (a) < (b) ? (b) : (a) )
+#endif
+
 // d-bus headers
 #include <dbus/dbus.h>
 
@@ -66,10 +70,15 @@ int dbus_marshall_property(
 #define SYSTEMD_ROOT_NODE             "/org/freedesktop/systemd1"
 #define SYSTEMD_MANAGER_INTERFACE     SYSTEMD_SERVICE_NAME ".Manager"
 #define SYSTEMD_UNIT_INTERFACE        SYSTEMD_SERVICE_NAME ".Unit"
+#define SYSTEMD_SERVICE_INTERFACE     SYSTEMD_SERVICE_NAME ".Service"
 
 DBusConnection *conn;
 
 int systemd_connect();
 int systemd_get_unit(char *s, size_t n, const char* unit);
+int systemd_unit_is_service(const char *path);
+int systemd_service_state_code(const char *state);
+int systemd_service_startup_code(const char *state);
+int systemd_get_service_path(char *s, size_t n, const char *path);
 
 #endif

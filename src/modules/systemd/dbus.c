@@ -132,6 +132,10 @@ DBusMessageIter* dbus_get_property(
   return iter;
 }
 
+/*
+ * dbus_get_property_string fills the given buffer with the value of the given
+ * object property.
+ */
 int dbus_get_property_string(
   char          *s,
   const size_t  n,
@@ -192,7 +196,7 @@ int dbus_get_property_json(
  * dbus_marshall_property gets the value of a d-bus property and marshalls it
  * into a Zabbix AGENT_RESULT struct.
  *
- * Returns FAIL on error.
+ * Returns SYSINFO_RET_FAIL on error.
  */
 int dbus_marshall_property(
   AGENT_RESULT  *result,
@@ -215,7 +219,7 @@ int dbus_marshall_property(
 
   if (NULL == iter) {
     SET_MSG_RESULT(result, strdup("failed to get property"));
-    return FAIL;
+    return SYSINFO_RET_FAIL;
   }
   
   type = dbus_message_iter_get_arg_type(iter);
@@ -236,7 +240,7 @@ int dbus_marshall_property(
 
     SET_STR_RESULT(result, sb_concat(sb));
     sb_free(sb);
-    return SUCCEED;
+    return SYSINFO_RET_OK;
   }
 
   // marshal basic type
@@ -244,27 +248,27 @@ int dbus_marshall_property(
   switch (type) {
   case DBUS_TYPE_STRING:
     SET_STR_RESULT(result, strdup(value.str));
-    return SUCCEED;
+    return SYSINFO_RET_OK;
 
   case DBUS_TYPE_BOOLEAN:
     SET_UI64_RESULT(result, value.bool_val);
-    return SUCCEED;
+    return SYSINFO_RET_OK;
 
   case DBUS_TYPE_UINT64:
   case DBUS_TYPE_INT64:
     SET_UI64_RESULT(result, value.u64);
-    return SUCCEED;
+    return SYSINFO_RET_OK;
 
   case DBUS_TYPE_UINT32:
   case DBUS_TYPE_INT32:
     SET_UI64_RESULT(result, value.u32);
-    return SUCCEED;
+    return SYSINFO_RET_OK;
   
   case DBUS_TYPE_DOUBLE:
     SET_DBL_RESULT(result, value.dbl);
-    return SUCCEED;
+    return SYSINFO_RET_OK;
   }
 
   SET_MSG_RESULT(result, zbx_dsprintf(NULL, "unsupported value type: %c", type));
-  return FAIL;
+  return SYSINFO_RET_FAIL;
 }

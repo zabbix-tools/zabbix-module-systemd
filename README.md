@@ -19,13 +19,16 @@ $ sudo make prefix=/usr sysconfdir=/etc libdir=/usr/lib64 install
 systemd[<property>]                         return the given property of the
                                             systemd Manager interface
 
-systemd.unit[<unit>,<interface>,<property>] return the given property of the
+systemd.unit[unit,<interface>,<property>]   return the given property of the
                                             given interface of the given unit
                                             name
 
 systemd.unit.discovery[]                    discovery all known units
 
 systemd.modver[]                            version of the loaded module
+
+systemd.service.info[service,<param>]       query various service stats, similar
+                                            to service.info on the Windows agent
 ```
 
 For a list of available unit interfaces and properties, see the

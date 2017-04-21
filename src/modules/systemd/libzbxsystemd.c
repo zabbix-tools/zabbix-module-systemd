@@ -4,6 +4,7 @@ static int SYSTEMD_MODVER(AGENT_REQUEST*, AGENT_RESULT*);
 static int SYSTEMD_MANAGER(AGENT_REQUEST *request, AGENT_RESULT *result);
 static int SYSTEMD_UNIT(AGENT_REQUEST*, AGENT_RESULT*);
 static int SYSTEMD_UNIT_DISCOVERY(AGENT_REQUEST*, AGENT_RESULT*);
+static int SYSTEMD_SERVICE_INFO(AGENT_REQUEST*, AGENT_RESULT*);
 
 ZBX_METRIC *zbx_module_item_list()
 {
@@ -13,6 +14,7 @@ ZBX_METRIC *zbx_module_item_list()
     { "systemd",                CF_HAVEPARAMS,  SYSTEMD_MANAGER,        "Version" },
     { "systemd.unit",           CF_HAVEPARAMS,  SYSTEMD_UNIT,           "dbus.service,Service,Result" },
     { "systemd.unit.discovery", 0,              SYSTEMD_UNIT_DISCOVERY, NULL },
+    { "systemd.service.info",   CF_HAVEPARAMS,  SYSTEMD_SERVICE_INFO,   "dbus.service" },
     { NULL }
   };
 
@@ -66,20 +68,16 @@ static int SYSTEMD_MANAGER(AGENT_REQUEST *request, AGENT_RESULT *result)
     property = "Version";
 
   // get value
-  if (0 == dbus_marshall_property(
+  return dbus_marshall_property(
     result,
     SYSTEMD_SERVICE_NAME,
     SYSTEMD_ROOT_NODE,
     SYSTEMD_MANAGER_INTERFACE,
     property
-  )) {
-    res = SYSINFO_RET_OK;
-  }
-  
-  return res;
+  );
 }
 
-// systemd.unit[<unit_name>,<interface=Unit>,<property=Result>]
+// systemd.unit[unit_name,<interface=Unit>,<property=Result>]
 static int SYSTEMD_UNIT(AGENT_REQUEST *request, AGENT_RESULT *result)
 {
   const char      *unit, *interface, *property;
@@ -113,17 +111,13 @@ static int SYSTEMD_UNIT(AGENT_REQUEST *request, AGENT_RESULT *result)
     property = "ActiveState";
 
   // get value
-  if (0 == dbus_marshall_property(
+  return dbus_marshall_property(
     result,
     SYSTEMD_SERVICE_NAME,
     path,
     interface,
     property
-  )) {
-    res = SYSINFO_RET_OK;
-  }
-  
-  return res;
+  );
 }
 
 // systemd.unit.discovery[]
@@ -217,4 +211,134 @@ static int SYSTEMD_UNIT_DISCOVERY(AGENT_REQUEST *request, AGENT_RESULT *result)
   zbx_json_free(&j);
 
   return SYSINFO_RET_OK;
+}
+
+// service.info[service,<param=state>]
+// https://support.zabbix.com/browse/ZBXNEXT-2871
+static int SYSTEMD_SERVICE_INFO(AGENT_REQUEST *request, AGENT_RESULT *result)
+{
+  int         status, paramId = 0;
+  char        path[4096], buf[64];
+  const char  *service, *param;
+  const char  *params[] = {
+    "state", "displayname", "path", "user", "startup", "description",
+    NULL
+  };
+
+  if (1 > request->nparam || 2 < request->nparam) {
+    SET_MSG_RESULT(result, strdup("Invalid number of parameters."));
+    return SYSINFO_RET_FAIL;
+  }
+
+  service = get_rparam(request, 0);
+  if (NULL == service || '\0' == *service) {
+    SET_MSG_RESULT(result, strdup("Invalid service name."));
+    return SYSINFO_RET_FAIL;
+  }
+
+  // validate param
+  param = get_rparam(request, 1);
+  if (NULL != param && '\0' != *param)
+    for (paramId = 0; params[paramId]; paramId++)
+      if (0 == strncmp(param, params[paramId], 12))
+        break;
+
+  if (NULL == params[paramId]) {
+    SET_MSG_RESULT(result, zbx_dsprintf(NULL, "Unsupported param: %s", param));
+    return SYSINFO_RET_FAIL;
+  }
+
+  // get service object path
+  if (FAIL == (systemd_get_unit(path, sizeof(path), service))) {
+    SET_MSG_RESULT(result, strdup("Failed to lookup object path"));
+    return SYSINFO_RET_FAIL;
+  }
+
+  if (!systemd_unit_is_service(path)) {
+    SET_MSG_RESULT(result, strdup("Not a service"));
+    return SYSINFO_RET_FAIL;
+  }
+
+  switch(paramId) {
+    case 0: // param = state
+      if(FAIL == dbus_get_property_string(
+                            buf,
+                            sizeof(buf),
+                            SYSTEMD_SERVICE_NAME,
+                            path,
+                            SYSTEMD_UNIT_INTERFACE,
+                            "ActiveState")
+      ) {
+        SET_MSG_RESULT(result, strdup("Failed to get ActiveState property"));
+        return SYSINFO_RET_FAIL;
+      }                            
+
+      if(-1 == (status = systemd_service_state_code(buf))) {
+        SET_MSG_RESULT(result, zbx_dsprintf(NULL, "Unknown service state: %s", buf));
+        return SYSINFO_RET_FAIL;
+      }
+
+      SET_UI64_RESULT(result, status);
+      return SYSINFO_RET_OK;
+
+    case 1: // param = displayname
+      return dbus_marshall_property(
+                            result,
+                            SYSTEMD_SERVICE_NAME,
+                            path,
+                            SYSTEMD_UNIT_INTERFACE,
+                            "Id");
+
+    case 2: // param = path
+      // extract path from Service.ExecStart
+      if (FAIL == systemd_get_service_path(buf, sizeof(buf), path)) {
+        SET_MSG_RESULT(result, strdup("Failed to get ExecStart property"));
+        return SYSINFO_RET_FAIL;
+      }
+
+      SET_STR_RESULT(result, strdup(buf));
+      return SYSINFO_RET_OK;
+
+    case 3: // param = user
+      // TODO: Service.User always seems to be empty - maybe use PID?
+      return dbus_marshall_property(
+                            result,
+                            SYSTEMD_SERVICE_NAME,
+                            path,
+                            SYSTEMD_SERVICE_INTERFACE,
+                            "User");
+
+    case 4: // param = startup
+      if(FAIL == dbus_get_property_string(
+                            buf,
+                            sizeof(buf),
+                            SYSTEMD_SERVICE_NAME,
+                            path,
+                            SYSTEMD_UNIT_INTERFACE,
+                            "UnitFileState")
+      ) {
+        SET_MSG_RESULT(result, strdup("Failed to get UnitFileState property"));
+        return SYSINFO_RET_FAIL;
+      }                            
+
+      if(-1 == (status = systemd_service_startup_code(buf))) {
+        SET_MSG_RESULT(result, zbx_dsprintf(NULL, "Unknown service startup: %s", buf));
+        return SYSINFO_RET_FAIL;
+      }
+
+      SET_UI64_RESULT(result, status);
+      return SYSINFO_RET_OK;
+
+    case 5: // param = description
+          return dbus_marshall_property(
+                            result,
+                            SYSTEMD_SERVICE_NAME,
+                            path,
+                            SYSTEMD_UNIT_INTERFACE,
+                            "Description");
+  }
+
+  // impossible
+  zabbix_log(LOG_LEVEL_ERR, LOG_PREFIX "bug in SYSTEMD_SERVICE_INFO(%s, %s)", service, param);
+  return SYSINFO_RET_FAIL;
 }
