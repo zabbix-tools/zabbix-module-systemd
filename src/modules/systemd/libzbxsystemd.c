@@ -5,16 +5,18 @@ static int SYSTEMD_MANAGER(AGENT_REQUEST *request, AGENT_RESULT *result);
 static int SYSTEMD_UNIT(AGENT_REQUEST*, AGENT_RESULT*);
 static int SYSTEMD_UNIT_DISCOVERY(AGENT_REQUEST*, AGENT_RESULT*);
 static int SYSTEMD_SERVICE_INFO(AGENT_REQUEST*, AGENT_RESULT*);
+static int SYSTEMD_SERVICE_DISCOVERY(AGENT_REQUEST*, AGENT_RESULT*);
 
 ZBX_METRIC *zbx_module_item_list()
 {
   static ZBX_METRIC keys[] =
   {
-    { "systemd.modver",         0,              SYSTEMD_MODVER,         NULL },
-    { "systemd",                CF_HAVEPARAMS,  SYSTEMD_MANAGER,        "Version" },
-    { "systemd.unit",           CF_HAVEPARAMS,  SYSTEMD_UNIT,           "dbus.service,Service,Result" },
-    { "systemd.unit.discovery", 0,              SYSTEMD_UNIT_DISCOVERY, NULL },
-    { "systemd.service.info",   CF_HAVEPARAMS,  SYSTEMD_SERVICE_INFO,   "dbus.service" },
+    { "systemd.modver",             0,              SYSTEMD_MODVER,             NULL },
+    { "systemd",                    CF_HAVEPARAMS,  SYSTEMD_MANAGER,            "Version" },
+    { "systemd.unit",               CF_HAVEPARAMS,  SYSTEMD_UNIT,               "dbus.service,Service,Result" },
+    { "systemd.unit.discovery",     0,              SYSTEMD_UNIT_DISCOVERY,     NULL },
+    { "systemd.service.info",       CF_HAVEPARAMS,  SYSTEMD_SERVICE_INFO,       "dbus.service" },
+    { "systemd.service.discovery",  CF_HAVEPARAMS,  SYSTEMD_SERVICE_DISCOVERY,  NULL },
     { NULL }
   };
 
@@ -191,9 +193,9 @@ static int SYSTEMD_UNIT_DISCOVERY(AGENT_REQUEST *request, AGENT_RESULT *result)
         zbx_json_addstring(&j, "{#UNIT.OBJECTPATH}", value.str, ZBX_JSON_TYPE_STRING);
         
         // while we know the object path, lookup additional properties
-        dbus_get_property_json(&j, "{#UNIT.FRAGMENTPATH}", value.str, "FragmentPath");
-        dbus_get_property_json(&j, "{#UNIT.UNITFILESTATE}", value.str, "UnitFileState");
-        dbus_get_property_json(&j, "{#UNIT.FOLLOWING}", value.str, "Following");
+        dbus_get_property_json(&j, "{#UNIT.FRAGMENTPATH}", value.str, SYSTEMD_UNIT_INTERFACE, "FragmentPath");
+        dbus_get_property_json(&j, "{#UNIT.UNITFILESTATE}", value.str, SYSTEMD_UNIT_INTERFACE, "UnitFileState");
+        dbus_get_property_json(&j, "{#UNIT.FOLLOWING}", value.str, SYSTEMD_UNIT_INTERFACE, "Following");
         break;
       }
 
@@ -340,4 +342,79 @@ static int SYSTEMD_SERVICE_INFO(AGENT_REQUEST *request, AGENT_RESULT *result)
   // impossible
   zabbix_log(LOG_LEVEL_ERR, LOG_PREFIX "bug in SYSTEMD_SERVICE_INFO(%s, %s)", service, param);
   return SYSINFO_RET_FAIL;
+}
+
+// systemd.service.discovery[]
+static int SYSTEMD_SERVICE_DISCOVERY(AGENT_REQUEST *request, AGENT_RESULT *result)
+{
+  DBusMessage     *msg = NULL;
+  DBusMessageIter args, arr, unit;
+  struct zbx_json j; 
+  DBusBasicValue  value;
+  int             res = SYSINFO_RET_FAIL;
+  int             type = 0, i = 0;
+  char            *path;
+
+  // send method call
+  msg = dbus_message_new_method_call(
+    SYSTEMD_SERVICE_NAME,
+    SYSTEMD_ROOT_NODE,
+    SYSTEMD_MANAGER_INTERFACE,
+    "ListUnits");
+
+  if (NULL == (msg = dbus_exchange_message(msg))) {
+    SET_MSG_RESULT(result, strdup("failed to list units"));
+    return res;
+  }
+
+  // check result message
+  if (!dbus_message_iter_init(msg, &args)) {
+    zabbix_log(LOG_LEVEL_ERR, LOG_PREFIX "no value returned");
+    return res;
+  }
+  
+  if (DBUS_TYPE_ARRAY != dbus_message_iter_get_arg_type(&args)) {
+    zabbix_log(LOG_LEVEL_ERR, LOG_PREFIX "returned value is not an array");
+    return res;
+  }
+  
+  zbx_json_init(&j, ZBX_JSON_STAT_BUF_LEN);
+  zbx_json_addarray(&j, ZBX_PROTO_TAG_DATA);
+
+  // loop through returned units
+  dbus_message_iter_recurse(&args, &arr);
+  while ((type = dbus_message_iter_get_arg_type (&arr)) != DBUS_TYPE_INVALID) {
+    dbus_message_iter_recurse(&arr, &unit);
+
+    // get object path a(ssssssouso)[n][6]
+    dbus_message_iter_next_n(&unit, 6);
+    if (DBUS_TYPE_INVALID == (type = dbus_message_iter_get_arg_type(&unit))) {
+      zabbix_log(LOG_LEVEL_ERR, strdup(LOG_PREFIX "unexpected value type"));
+      goto next_unit;
+    }
+
+    dbus_message_iter_get_basic(&unit, &value);
+    path = value.str;
+    if (!systemd_unit_is_service(path))
+      goto next_unit;
+
+    // send property values
+    zbx_json_addobject(&j, NULL);
+    zbx_json_addstring(&j, "{#SERVICE.TYPE}", "service", ZBX_JSON_TYPE_STRING);
+    dbus_get_property_json(&j, "{#SERVICE.NAME}", path, SYSTEMD_UNIT_INTERFACE, "Id");
+    dbus_get_property_json(&j, "{#SERVICE.DISPLAYNAME}", path, SYSTEMD_UNIT_INTERFACE, "Description");
+    dbus_get_property_json(&j, "{#SERVICE.PATH}", path, SYSTEMD_UNIT_INTERFACE, "FragmentPath");
+    dbus_get_property_json(&j, "{#SERVICE.STARTUPNAME}", path, SYSTEMD_UNIT_INTERFACE, "UnitFileState");
+    zbx_json_close(&j);
+
+next_unit:
+    dbus_message_iter_next(&arr);
+  }
+
+  dbus_message_unref(msg);
+  zbx_json_close(&j);
+  SET_STR_RESULT(result, strdup(j.buffer));
+  zbx_json_free(&j);
+
+  return SYSINFO_RET_OK;
 }

@@ -37,6 +37,7 @@ int timeout;
 #define DBUS_PROPERTIES_INTERFACE     "org.freedesktop.DBus.Properties"
 
 int               dbus_check_error(DBusMessage*);
+int               dbus_message_iter_next_n(DBusMessageIter *iter, int n);
 DBusMessage       *dbus_exchange_message(DBusMessage *msg);
 DBusMessageIter   *dbus_get_property(
                                 const char*,
@@ -56,6 +57,7 @@ int dbus_get_property_json(
                 struct zbx_json *j,
                 const char      *key,
                 const char      *path,
+                const char      *interface,
                 const char      *property);
 
 int dbus_marshall_property(

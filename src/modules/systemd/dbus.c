@@ -25,6 +25,19 @@ int dbus_check_error(DBusMessage *msg)
 }
 
 /*
+ * dbus_message_iter_next_n calls dbus_message_iter_next n times and returns
+ * non-zero if it reaches the end of the iterator.
+ */
+int dbus_message_iter_next_n(DBusMessageIter *iter, int n)
+{
+  for (int i = 0; i < n; i++)
+    if (!dbus_message_iter_next(iter))
+      return 0;
+
+  return 1;
+}
+
+/*
  * dbus_exchange_message sends the given message and returns the response
  * message or NULL if an error occurs.
  */
@@ -172,6 +185,7 @@ int dbus_get_property_json(
               struct zbx_json *j,
               const char      *key,
               const char      *path,
+              const char      *interface,
               const char      *property
 ) {
   char buf[1024];
@@ -181,7 +195,7 @@ int dbus_get_property_json(
     sizeof(buf),
     SYSTEMD_SERVICE_NAME,
     path,
-    SYSTEMD_UNIT_INTERFACE,
+    interface,
     property
   )) {
     if ('\0' != buf[0])
