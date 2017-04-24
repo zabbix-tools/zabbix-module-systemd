@@ -32,10 +32,12 @@ systemd.unit[unit,<interface>,<property>]   return the given property of the
 
 systemd.unit.discovery[]                    discovery all known units
 
-systemd.modver[]                            version of the loaded module
-
 systemd.service.info[service,<param>]       query various service stats, similar
                                             to service.info on the Windows agent
+
+systemd.service.discovery[]                 discovery all known services
+
+systemd.modver[]                            version of the loaded module
 ```
 
 For a list of available unit interfaces and properties, see the
