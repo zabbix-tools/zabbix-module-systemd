@@ -179,7 +179,7 @@ int dbus_get_property_string(
 
 /*
  * dbus_get_property_json appends the value of the given property as a key/val
- * pair tothe given discovery json document.
+ * pair to the given discovery json document.
  */
 int dbus_get_property_json(
               struct zbx_json *j,
@@ -200,7 +200,7 @@ int dbus_get_property_json(
   )) {
     if ('\0' != buf[0])
       zbx_json_addstring(j, key, buf, ZBX_JSON_TYPE_STRING);
-      return SUCCEED;
+    return SUCCEED;
   }
 
   return FAIL;

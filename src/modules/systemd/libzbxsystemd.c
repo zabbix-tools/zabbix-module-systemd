@@ -352,7 +352,7 @@ static int SYSTEMD_SERVICE_DISCOVERY(AGENT_REQUEST *request, AGENT_RESULT *resul
   struct zbx_json j; 
   DBusBasicValue  value;
   int             res = SYSINFO_RET_FAIL;
-  int             type = 0, i = 0;
+  int             type = 0;
   char            *path;
 
   // send method call
@@ -389,7 +389,7 @@ static int SYSTEMD_SERVICE_DISCOVERY(AGENT_REQUEST *request, AGENT_RESULT *resul
     // get object path a(ssssssouso)[n][6]
     dbus_message_iter_next_n(&unit, 6);
     if (DBUS_TYPE_INVALID == (type = dbus_message_iter_get_arg_type(&unit))) {
-      zabbix_log(LOG_LEVEL_ERR, strdup(LOG_PREFIX "unexpected value type"));
+      zabbix_log(LOG_LEVEL_ERR, LOG_PREFIX "unexpected value type");
       goto next_unit;
     }
 
