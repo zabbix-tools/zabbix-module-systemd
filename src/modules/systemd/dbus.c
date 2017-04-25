@@ -1,5 +1,38 @@
 #include "libzbxsystemd.h"
 
+// global dbus connection
+DBusConnection *conn = NULL;
+
+/*
+ * dbus_connect establishes a connection to the d-bus system bus.
+ *
+ * Returns FAIL on error.
+ */
+int dbus_connect()
+{
+  if (NULL != conn)
+    return SUCCEED;
+
+  DBusError err;  
+  dbus_error_init(&err);
+
+  // connect to system bus
+  conn = dbus_bus_get(DBUS_BUS_SYSTEM, &err);
+  if (dbus_error_is_set(&err)) {
+    zabbix_log(LOG_LEVEL_ERR, LOG_PREFIX "failed to get d-bus session: %s",
+      err.message);
+    dbus_error_free(&err);
+    return FAIL;
+  }
+
+  zabbix_log(LOG_LEVEL_DEBUG, LOG_PREFIX "connected to d-bus with unique name: %s",
+    dbus_bus_get_unique_name(conn));
+
+  // TODO: check for SYSTEMD_SERVICE?
+  
+  return SUCCEED;
+}
+
 /*
  * dbus_check_error returns FAIL if the given message is an error message. The
  * error detail is logged to the Zabbix log on behalf of the caller.

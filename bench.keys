@@ -1,0 +1,17 @@
+# test keys for zabbix_agent_bench
+systemd.modver
+systemd[Version]
+systemd[Architecture]
+systemd[NNames]
+systemd[Progress]
+systemd.unit.discovery
+  systemd.unit[{#UNIT.NAME}]
+  systemd.unit[{#UNIT.NAME},,LoadState]
+  systemd.unit[{#UNIT.NAME},,SubState]
+  systemd.unit[{#UNIT.NAME},,UnitFileState]
+  systemd.unit[{#UNIT.NAME},,FragmentPath]
+  systemd.unit[{#UNIT.NAME},,CanStart]
+  systemd.unit[{#UNIT.NAME},,CanStop]
+  systemd.unit[{#UNIT.NAME},,CanReload]
+  systemd.unit[{#UNIT.NAME},,CanIsolate]
+systemd.service.discovery

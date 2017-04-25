@@ -1,5 +1,8 @@
 #include "libzbxsystemd.h"
 
+// pid that initialised the module, before forking workers.
+int mainpid = 0;
+
 static int SYSTEMD_MODVER(AGENT_REQUEST*, AGENT_RESULT*);
 static int SYSTEMD_MANAGER(AGENT_REQUEST *request, AGENT_RESULT *result);
 static int SYSTEMD_UNIT(AGENT_REQUEST*, AGENT_RESULT*);
@@ -30,7 +33,7 @@ int zbx_module_api_version() {
 int zbx_module_init()
 {
     zabbix_log(LOG_LEVEL_DEBUG, LOG_PREFIX "starting v%s", PACKAGE_VERSION);
-    systemd_connect();
+    mainpid = getpid();
     return ZBX_MODULE_OK;
 }
 
@@ -68,6 +71,11 @@ static int SYSTEMD_MANAGER(AGENT_REQUEST *request, AGENT_RESULT *result)
   if (NULL == property || '\0' == *property)
     property = "Version";
 
+  if (FAIL == dbus_connect()) {
+    SET_MSG_RESULT(result, strdup("Failed to connect to D-Bus."));
+    return SYSINFO_RET_FAIL;
+  }
+
   // get value
   return dbus_marshall_property(
     result,
@@ -78,7 +86,7 @@ static int SYSTEMD_MANAGER(AGENT_REQUEST *request, AGENT_RESULT *result)
   );
 }
 
-// systemd.unit[unit_name,<interface=Unit>,<property=Result>]
+// systemd.unit[unit_name,<interface=Unit>,<property=ActiveState>]
 static int SYSTEMD_UNIT(AGENT_REQUEST *request, AGENT_RESULT *result)
 {
   const char      *unit, *interface, *property;
@@ -90,6 +98,11 @@ static int SYSTEMD_UNIT(AGENT_REQUEST *request, AGENT_RESULT *result)
     return SYSINFO_RET_FAIL;
   }
   
+  if (FAIL == dbus_connect()) {
+    SET_MSG_RESULT(result, strdup("Failed to connect to D-Bus."));
+    return SYSINFO_RET_FAIL;
+  }
+  
   // resolve unit name to object path
   unit = get_rparam(request, 0);
   if (FAIL == systemd_get_unit(path, sizeof(path), unit)) {
@@ -97,7 +110,7 @@ static int SYSTEMD_UNIT(AGENT_REQUEST *request, AGENT_RESULT *result)
     return res;
   }
 
-  // resolve full interface name
+  // resolve full interface name (default: org.freedesktop.systemd1.Unit)
   interface = get_rparam(request, 1);
   if (NULL == interface || '\0' == *interface) {
     interface = SYSTEMD_SERVICE_NAME ".Unit";
@@ -106,7 +119,7 @@ static int SYSTEMD_UNIT(AGENT_REQUEST *request, AGENT_RESULT *result)
     interface = &buf[0];
   }
 
-  // resolve property name
+  // resolve property name (default: ActiveState)
   property = get_rparam(request, 2);
   if (NULL == property || '\0' == *property)
     property = "ActiveState";
@@ -126,10 +139,15 @@ static int SYSTEMD_UNIT_DISCOVERY(AGENT_REQUEST *request, AGENT_RESULT *result)
 {
   DBusMessage     *msg = NULL;
   DBusMessageIter args, arr, unit;
-  struct zbx_json j; 
   DBusBasicValue  value;
+  struct zbx_json j; 
   int             res = SYSINFO_RET_FAIL;
   int             type = 0, i = 0;
+
+  if (FAIL == dbus_connect()) {
+    SET_MSG_RESULT(result, strdup("Failed to connect to D-Bus."));
+    return SYSINFO_RET_FAIL;
+  }
 
   // send method call
   msg = dbus_message_new_method_call(
@@ -249,6 +267,11 @@ static int SYSTEMD_SERVICE_INFO(AGENT_REQUEST *request, AGENT_RESULT *result)
     return SYSINFO_RET_FAIL;
   }
 
+  if (FAIL == dbus_connect()) {
+    SET_MSG_RESULT(result, strdup("Failed to connect to D-Bus."));
+    return SYSINFO_RET_FAIL;
+  }
+
   // get service object path
   if (FAIL == (systemd_get_unit(path, sizeof(path), service))) {
     SET_MSG_RESULT(result, strdup("Failed to lookup object path"));
@@ -354,6 +377,11 @@ static int SYSTEMD_SERVICE_DISCOVERY(AGENT_REQUEST *request, AGENT_RESULT *resul
   int             res = SYSINFO_RET_FAIL;
   int             type = 0;
   char            *path;
+
+  if (FAIL == dbus_connect()) {
+    SET_MSG_RESULT(result, strdup("Failed to connect to D-Bus."));
+    return SYSINFO_RET_FAIL;
+  }
 
   // send method call
   msg = dbus_message_new_method_call(

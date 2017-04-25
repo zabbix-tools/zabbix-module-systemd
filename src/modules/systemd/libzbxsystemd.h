@@ -30,12 +30,16 @@
 
 #define LOG_PREFIX              "[systemd] "
 
+// pid that initialised the module, before forking workers.
+int mainpid;
+
 // timeout set by host agent
 int timeout;
 
 // D-Bus api
 #define DBUS_PROPERTIES_INTERFACE     "org.freedesktop.DBus.Properties"
 
+int               dbus_connect();
 int               dbus_check_error(DBusMessage*);
 int               dbus_message_iter_next_n(DBusMessageIter *iter, int n);
 DBusMessage       *dbus_exchange_message(DBusMessage *msg);
@@ -76,7 +80,6 @@ int dbus_marshall_property(
 
 DBusConnection *conn;
 
-int systemd_connect();
 int systemd_get_unit(char *s, size_t n, const char* unit);
 int systemd_unit_is_service(const char *path);
 int systemd_service_state_code(const char *state);
