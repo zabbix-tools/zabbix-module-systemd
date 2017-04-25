@@ -1,9 +1,7 @@
 # zabbix-module-systemd
 
 zabbix-module-systemd is a loadable Zabbix module that enables Zabbix to query
-the systemd D-Bus API for native and granular service monitoring.
-
-This project is a work in progress.
+the systemd D-Bus API for native and granular system state monitoring.
 
 ## Download
 
@@ -17,6 +15,13 @@ The following packages are available:
 ```bash
 $ ./configure --with-zabbix=/usr/src/zabbix-3.2.5
 $ make
+$ sudo make install
+```
+
+If you are using a packaged version of Zabbix, you may with to redirect the
+installation directories as follows:
+
+```
 $ sudo make prefix=/usr sysconfdir=/etc libdir=/usr/lib64 install
 ```
 
