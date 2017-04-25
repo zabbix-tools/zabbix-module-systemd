@@ -90,7 +90,7 @@ $ zabbix_get -k systemd.unit[dev-mqueue.mount,Mount,Where]
 $ zabbix_get -k systemd.unit[dbus.socket,Socket,NConnections]
 1
 
-# discovery all services
+# discover all services
 $ zabbix_get -k systemd.service.discovery
 {
   "data": [
@@ -121,8 +121,6 @@ $ zabbix_get -k systemd.service.info[sshd,startup]
 0
 
 ```
-
-
 
 ## SELinux
 
