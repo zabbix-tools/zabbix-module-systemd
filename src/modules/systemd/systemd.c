@@ -1,5 +1,12 @@
 #include "libzbxsystemd.h"
 
+#ifndef ITEM_KEY_LEN
+#define ITEM_KEY_LEN        255
+#endif
+
+#define SERVICE_EXT         ".service"
+#define SERVICE_EXT_LEN     8
+
 /*
  * systemd_get_unit fills the given buffer with the Object Path of the given
  * unit name (e.g. sshd.service).
@@ -13,17 +20,19 @@ int systemd_get_unit(char *s, size_t n, const char* unit)
   DBusMessage     *msg = NULL;
   DBusMessageIter args;
   const char      *val = NULL;
-  char            buf[255], *c = NULL;
+  char            *c = NULL, buf[ITEM_KEY_LEN+SERVICE_EXT_LEN+1];
   int             type = 0;
 
-  // qualify unit name if no extension given
-  zbx_strlcpy(buf, unit, sizeof(buf));
+  // qualify unit name if no extension given.
+  // unit is guaranteed by caller to be < ITEM_KEY_LEN
+  zbx_strlcpy(buf, unit, ITEM_KEY_LEN);
   for (c = &buf[0]; *c; c++)
     if ('.' == *c)
       break;
   
-  if ('\0' == *c)
-    zbx_strlcpy(c, ".service", 9);
+  if ('\0' == *c) {
+    zbx_strlcpy(c, SERVICE_EXT, SERVICE_EXT_LEN+1);
+  }
   c = &buf[0];
 
   // create method call
