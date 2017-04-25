@@ -42,3 +42,23 @@ systemd.modver[]                            version of the loaded module
 
 For a list of available unit interfaces and properties, see the
 [D-Bus API of systemd/PID 1](https://www.freedesktop.org/wiki/Software/systemd/dbus).
+
+## SELinux
+
+If you have configure SELinux in enforcing mode, you might see the following
+error in your Zabbix logs, when attempting to use item keys from this module:
+
+```
+[systemd] org.freedesktop.DBus.Error.AccessDenied: SELinux policy denies access
+```
+
+This is because the SELinux policy that ships with RedHat/CentOS does not
+explicitely allow the Zabbix agent to communicate with D-Bus. This package
+includes an extension module to grant Zabbix only the permissions it requires
+for read-only access.
+
+After installing this package, the SELinux module can be enabled by running:
+
+```bash
+$ semodule -v -i /usr/share/selinux/packages/zabbix-module-systemd/libzbxsystemd.pp
+```
