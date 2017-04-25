@@ -48,6 +48,82 @@ systemd.modver[]                            version of the loaded module
 For a list of available unit interfaces and properties, see the
 [D-Bus API of systemd/PID 1](https://www.freedesktop.org/wiki/Software/systemd/dbus).
 
+## Examples
+
+```bash
+# return the system architecture
+$ zabbix_get -k systemd[Architecture]
+x86-64
+
+# discover all units
+$ zabbix_get -k systemd.unit.discovery
+{
+  "data": [
+    {
+      "{#UNIT.NAME}": "dev-disk-by\\x2dpath-pci\\x2d0000:00:01.1\\x2data\\x2d1.0\\x2dpart2.device",
+      "{#UNIT.DESCRIPTION}": "VBOX_HARDDISK 2",
+      "{#UNIT.LOADSTATE}": "loaded",
+      "{#UNIT.ACTIVESTATE}": "active",
+      "{#UNIT.SUBSTATE}": "plugged",
+      "{#UNIT.OBJECTPATH}": "/org/freedesktop/systemd1/unit/dev_2ddisk_2dby_5cx2dpath_2dpci_5cx2d0000_3a00_3a01_2e1_5cx2data_5cx2d1_2e0_5cx2dpart2_2edevice",
+      "{#UNIT.FOLLOWING}": "sys-devices-pci0000:00-0000:00:01.1-ata1-host0-target0:0:0-0:0:0:0-block-sda-sda2.device"
+    },
+    {
+      "{#UNIT.NAME}": "getty@tty1.service",
+      "{#UNIT.DESCRIPTION}": "Getty on tty1",
+      "{#UNIT.LOADSTATE}": "loaded",
+      "{#UNIT.ACTIVESTATE}": "active",
+      "{#UNIT.SUBSTATE}": "running",
+      "{#UNIT.OBJECTPATH}": "/org/freedesktop/systemd1/unit/getty_40tty1_2eservice",
+      "{#UNIT.FRAGMENTPATH}": "/usr/lib/systemd/system/getty@.service",
+      "{#UNIT.UNITFILESTATE}": "enabled"
+    },
+    ...
+  ]
+}
+
+# return the location of a mount unit
+$ zabbix_get -k systemd.unit[dev-mqueue.mount,Mount,Where]
+/dev/mqueue
+
+# return the number of open connections on a socket unit
+$ zabbix_get -k systemd.unit[dbus.socket,Socket,NConnections]
+1
+
+# discovery all services
+$ zabbix_get -k systemd.service.discovery
+{
+  "data": [
+    {
+      "{#SERVICE.TYPE}": "service",
+      "{#SERVICE.NAME}": "getty@tty1.service",
+      "{#SERVICE.DISPLAYNAME}": "Getty on tty1",
+      "{#SERVICE.PATH}": "/usr/lib/systemd/system/getty@.service",
+      "{#SERVICE.STARTUPNAME}": "enabled"
+    },
+    {
+      "{#SERVICE.TYPE}": "service",
+      "{#SERVICE.NAME}": "systemd-fsck-root.service",
+      "{#SERVICE.DISPLAYNAME}": "File System Check on Root Device",
+      "{#SERVICE.PATH}": "/usr/lib/systemd/system/systemd-fsck-root.service",
+      "{#SERVICE.STARTUPNAME}": "static"
+    },
+    ...
+  ]
+}
+
+# return the state of a service as an integer
+$ zabbix_get -k systemd.service.info[sshd]
+0
+
+# return the startup state of a service as an integer
+$ zabbix_get -k systemd.service.info[sshd,startup]
+0
+
+```
+
+
+
 ## SELinux
 
 If you have configure SELinux in enforcing mode, you might see the following
