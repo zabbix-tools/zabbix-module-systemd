@@ -19,4 +19,5 @@ allow zabbix_agent_t system_dbusd_t:unix_stream_socket connectto;
 allow zabbix_agent_t system_dbusd_t:dbus send_msg;
 allow zabbix_agent_t init_t:dbus send_msg;
 allow zabbix_agent_t init_t:system status;
+allow zabbix_agent_t init_t:service status;
 allow zabbix_agent_t file_type:service status;

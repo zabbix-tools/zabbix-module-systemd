@@ -47,6 +47,7 @@ rm -rf $RPM_BUILD_ROOT
 * Tue Apr 25 2017 Ryan Armstrong <ryan@cavaliercoder.com> 1.1.0-1
 - Added systemd.service.discovery key
 - Fixed cross-thread connection handling
+- Fixed SELinux permissions for init_t:service status
 
 * Wed Apr 19 2017 Ryan Armstrong <ryan@cavaliercoder.com> 1.0.0-1
 - Initial release
