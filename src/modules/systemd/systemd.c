@@ -99,6 +99,23 @@ int systemd_get_service_path(char *s, size_t n, const char *path)
 }
 
 /*
+ * systemd_cmptype returns non-zero if the given unit name has the given type
+ * extension. E.g. system_cmptype("dbus.service", "service") != 0
+ */
+int systemd_cmptype(const char *unit, const char *type)
+{
+  const char *c;
+  for (c = unit; ; c++) {
+    if ('\0' == *c)
+      return 0;
+    if ('.' == *c)
+      break;
+  }
+
+  return (0 == strcmp(++c, type));
+}
+
+/*
  * systemd_unit_is_service returns non-zero if the given object path is a
  * systemd service unit.
  */

@@ -83,6 +83,7 @@ DBusConnection *conn;
 
 int systemd_get_unit(char *s, size_t n, const char* unit);
 int systemd_unit_is_service(const char *path);
+int systemd_cmptype(const char *unit, const char *type);
 int systemd_service_state_code(const char *state);
 int systemd_service_startup_code(const char *state);
 int systemd_get_service_path(char *s, size_t n, const char *path);

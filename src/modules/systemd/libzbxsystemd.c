@@ -17,7 +17,7 @@ ZBX_METRIC *zbx_module_item_list()
     { "systemd.modver",             0,              SYSTEMD_MODVER,             NULL },
     { "systemd",                    CF_HAVEPARAMS,  SYSTEMD_MANAGER,            "Version" },
     { "systemd.unit",               CF_HAVEPARAMS,  SYSTEMD_UNIT,               "dbus.service,Service,Result" },
-    { "systemd.unit.discovery",     0,              SYSTEMD_UNIT_DISCOVERY,     NULL },
+    { "systemd.unit.discovery",     CF_HAVEPARAMS,  SYSTEMD_UNIT_DISCOVERY,     NULL },
     { "systemd.service.info",       CF_HAVEPARAMS,  SYSTEMD_SERVICE_INFO,       "dbus.service" },
     { "systemd.service.discovery",  CF_HAVEPARAMS,  SYSTEMD_SERVICE_DISCOVERY,  NULL },
     { NULL }
@@ -140,9 +140,17 @@ static int SYSTEMD_UNIT_DISCOVERY(AGENT_REQUEST *request, AGENT_RESULT *result)
   DBusMessage     *msg = NULL;
   DBusMessageIter args, arr, unit;
   DBusBasicValue  value;
-  struct zbx_json j; 
+  struct zbx_json j;
+  const char      *filter;
   int             res = SYSINFO_RET_FAIL;
   int             type = 0, i = 0;
+
+  if (1 < request->nparam) {
+    SET_MSG_RESULT(result, strdup("Invalid number of parameters."));
+    return SYSINFO_RET_FAIL;
+  }
+
+  filter = get_rparam(request, 0);
 
   if (FAIL == dbus_connect()) {
     SET_MSG_RESULT(result, strdup("Failed to connect to D-Bus."));
@@ -187,6 +195,11 @@ static int SYSTEMD_UNIT_DISCOVERY(AGENT_REQUEST *request, AGENT_RESULT *result)
 
       switch (i) {
       case 0:
+        // filter by unit type
+        if(NULL != filter || '\0' != filter)
+          if(0 == systemd_cmptype(value.str, filter))
+            goto next_unit;
+
         zbx_json_addobject(&j, NULL);
         zbx_json_addstring(&j, "{#UNIT.NAME}", value.str, ZBX_JSON_TYPE_STRING);
         break;
@@ -214,13 +227,15 @@ static int SYSTEMD_UNIT_DISCOVERY(AGENT_REQUEST *request, AGENT_RESULT *result)
         dbus_get_property_json(&j, "{#UNIT.FRAGMENTPATH}", value.str, SYSTEMD_UNIT_INTERFACE, "FragmentPath");
         dbus_get_property_json(&j, "{#UNIT.UNITFILESTATE}", value.str, SYSTEMD_UNIT_INTERFACE, "UnitFileState");
         dbus_get_property_json(&j, "{#UNIT.FOLLOWING}", value.str, SYSTEMD_UNIT_INTERFACE, "Following");
+        zbx_json_close(&j);
         break;
       }
 
       dbus_message_iter_next (&unit);
       i++;
     }
-    zbx_json_close(&j);
+
+  next_unit:
     dbus_message_iter_next(&arr);
   }
 
