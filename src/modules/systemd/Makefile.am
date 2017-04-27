@@ -22,11 +22,13 @@ install-data-hook: install-module install-module-conf
 
 # move module into correct location
 install-module:
+	rm -f \
+		$(DESTDIR)$(libdir)/libzbxsystemd.la \
+		$(DESTDIR)$(libdir)/libzbxsystemd.so
 	$(MKDIR_P) $(DESTDIR)$(libdir)/zabbix/modules/
-	rm -f $(DESTDIR)$(libdir)/libzbxsystemd.la
-	mv -f $(DESTDIR)$(libdir)/libzbxsystemd.so \
+	$(INSTALL) -m 644 ./.libs/libzbxsystemd.so \
 		$(DESTDIR)$(libdir)/zabbix/modules/libzbxsystemd.so
-
+	
 # install config file
 install-module-conf:
 	$(MKDIR_P) $(DESTDIR)$(sysconfdir)/zabbix/zabbix_agentd.d

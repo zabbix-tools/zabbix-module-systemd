@@ -7,8 +7,8 @@ the systemd D-Bus API for native and granular system state monitoring.
 
 The following packages are available:
 
-- [Sources](http://s3.cavaliercoder.com/zabbix-contrib/release/zabbix-module-systemd-1.1.0.tar.gz)
-- [Zabbix 3.2 - EL7 x86_64 RPM](http://s3.cavaliercoder.com/zabbix-contrib/rhel/7/x86_64/zabbix-module-systemd-1.1.0-1.x86_64.rpm)
+- [Sources](http://s3.cavaliercoder.com/zabbix-contrib/release/zabbix-module-systemd-1.2.0.tar.gz)
+- [Zabbix 3.2 - EL7 x86_64 RPM](http://s3.cavaliercoder.com/zabbix-contrib/rhel/7/x86_64/zabbix-module-systemd-1.2.0-1.x86_64.rpm)
 
 ## Install
 

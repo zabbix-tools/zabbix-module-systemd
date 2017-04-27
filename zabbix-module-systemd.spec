@@ -1,6 +1,6 @@
 Name          : zabbix-module-systemd
 Vendor        : cavaliercoder
-Version       : 1.1.0
+Version       : 1.2.0
 Release       : 1
 Summary       : systemd monitoring module for Zabbix
 
@@ -44,6 +44,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_docdir}/%{name}-%{version}/COPYING
 
 %changelog
+* Thu Apr 27 2017 Ryan Armstrong <ryan@cavaliercoder.com> 1.2.0-1
+- Added type parameter to systemd.unit.discovery
+
 * Tue Apr 25 2017 Ryan Armstrong <ryan@cavaliercoder.com> 1.1.0-1
 - Added systemd.service.discovery key
 - Fixed cross-thread connection handling
