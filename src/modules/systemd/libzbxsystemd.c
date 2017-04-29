@@ -1,4 +1,5 @@
 #include "libzbxsystemd.h"
+#include "libzbxcgroups.h"
 
 // pid that initialised the module, before forking workers.
 int mainpid = 0;
@@ -34,6 +35,7 @@ int zbx_module_init()
 {
     zabbix_log(LOG_LEVEL_DEBUG, LOG_PREFIX "starting v%s", PACKAGE_VERSION);
     mainpid = getpid();
+    cgroup_dir_detect();
     return ZBX_MODULE_OK;
 }
 

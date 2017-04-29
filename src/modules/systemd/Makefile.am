@@ -3,6 +3,8 @@ lib_LTLIBRARIES = libzbxsystemd.la
 libzbxsystemd_la_SOURCES = \
 	libzbxsystemd.h \
 	libzbxsystemd.c \
+        libzbxcgroups.h \
+        libzbxcgroups.c \
 	systemd.c \
 	dbus.c \
 	sb.c \
