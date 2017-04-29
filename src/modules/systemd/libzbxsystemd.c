@@ -11,8 +11,6 @@ static int SYSTEMD_UNIT_DISCOVERY(AGENT_REQUEST*, AGENT_RESULT*);
 static int SYSTEMD_SERVICE_INFO(AGENT_REQUEST*, AGENT_RESULT*);
 static int SYSTEMD_SERVICE_DISCOVERY(AGENT_REQUEST*, AGENT_RESULT*);
 
-
-// { "systemd.cgroup.dev",         CF_HAVEPARAMS,  SYSTEMD_CGROUP_DEV,         "dbus.service,blkio.io_queued,Total" },
 ZBX_METRIC *zbx_module_item_list()
 {
   static ZBX_METRIC keys[] =
@@ -24,6 +22,7 @@ ZBX_METRIC *zbx_module_item_list()
     { "systemd.service.info",       CF_HAVEPARAMS,  SYSTEMD_SERVICE_INFO,       "dbus.service" },
     { "systemd.service.discovery",  CF_HAVEPARAMS,  SYSTEMD_SERVICE_DISCOVERY,  NULL },
     { "systemd.cgroup.cpu",         CF_HAVEPARAMS,  SYSTEMD_CGROUP_CPU,         "dbus.service,total" },
+    { "systemd.cgroup.dev",         CF_HAVEPARAMS,  SYSTEMD_CGROUP_DEV,         "dbus.service,blkio.io_queued,Total" },
     { "systemd.cgroup.mem",         CF_HAVEPARAMS,  SYSTEMD_CGROUP_MEM,         "dbus.service,rss" },
     { NULL }
   };

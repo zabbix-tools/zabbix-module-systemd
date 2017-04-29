@@ -251,3 +251,94 @@ int     SYSTEMD_CGROUP_CPU(AGENT_REQUEST *request, AGENT_RESULT *result)
 
         return ret;
 }
+
+/******************************************************************************
+ *                                                                            *
+ * Function: SYSTEMD_CGROUP_DEV                                               *
+ *                                                                            *
+ * Purpose: device blkio metrics                                              *
+ *                                                                            *
+ * Return value: SYSINFO_RET_FAIL - function failed, item will be marked      *
+ *                                 as not supported by zabbix                 *
+ *               SYSINFO_RET_OK - success                                     *
+ *                                                                            *
+ * Notes: https://www.kernel.org/doc/Documentation/cgroups/blkio-controller.txt
+ ******************************************************************************/
+int     SYSTEMD_CGROUP_DEV(AGENT_REQUEST *request, AGENT_RESULT *result)
+{
+        zabbix_log(LOG_LEVEL_DEBUG, LOG_PREFIX "in cgroup_dev()");
+        char    *unit, *metric;
+        int     ret = SYSINFO_RET_FAIL;
+
+        if (3 != request->nparam)
+        {
+                zabbix_log(LOG_LEVEL_ERR, LOG_PREFIX "invalid number of parameters: %d",  request->nparam);
+                SET_MSG_RESULT(result, strdup("Invalid number of parameters"));
+                return SYSINFO_RET_FAIL;
+        }
+
+        if (cgroup_dir == NULL)
+        {
+                zabbix_log(LOG_LEVEL_DEBUG, LOG_PREFIX "systemd.cgroup.dev metrics are not available at the moment - no cgroup directory");
+                SET_MSG_RESULT(result, zbx_strdup(NULL, "systemd.cgroup.dev metrics are not available at the moment - no cgroup directory"));
+                return SYSINFO_RET_FAIL;
+        }
+
+        unit = get_rparam(request, 0);
+        char    *stat_file = malloc(strlen(get_rparam(request, 1)) + 2);
+        zbx_strlcpy(stat_file, "/", strlen(get_rparam(request, 1)) + 2);
+        zbx_strlcat(stat_file, get_rparam(request, 1), strlen(get_rparam(request, 1)) + 2);
+        metric = get_rparam(request, 2);
+
+        char    *cgroup = "blkio/system.slice/";
+        size_t  filename_size = strlen(cgroup) + strlen(unit) + strlen(cgroup_dir) + strlen(stat_file) + 2;
+        char    *filename = malloc(filename_size);
+        zbx_strlcpy(filename, cgroup_dir, filename_size);
+        zbx_strlcat(filename, cgroup, filename_size);
+        zbx_strlcat(filename, unit, filename_size);
+        zbx_strlcat(filename, stat_file, filename_size);
+        zabbix_log(LOG_LEVEL_DEBUG, LOG_PREFIX "metric source file: %s", filename);
+        FILE    *file;
+        if (NULL == (file = fopen(filename, "r")))
+        {
+                zabbix_log(LOG_LEVEL_ERR, LOG_PREFIX "cannot open metric file: '%s'", filename);
+                free(stat_file);
+                free(filename);
+                SET_MSG_RESULT(result, strdup("cannot open stat file, probably CONFIG_DEBUG_BLK_CGROUP is not enabled"));
+                return SYSINFO_RET_FAIL;
+        }
+
+        char    line[MAX_STRING_LEN];
+        char    *metric2 = malloc(strlen(metric)+3);
+        memcpy(metric2, metric, strlen(metric));
+        memcpy(metric2 + strlen(metric), " ", 2);
+        zbx_uint64_t    value = 0;
+        zabbix_log(LOG_LEVEL_DEBUG, LOG_PREFIX "looking metric %s in blkio file", metric);
+        while (NULL != fgets(line, sizeof(line), file))
+        {
+                if (0 != strncmp(line, metric2, strlen(metric2)))
+                        continue;
+                if (1 != sscanf(line, "%*s " ZBX_FS_UI64, &value))
+                {
+                     // maybe per blk device metric, e.g. '8:0 Read'
+                     if (1 != sscanf(line, "%*s %*s " ZBX_FS_UI64, &value))
+                     {
+                         zabbix_log(LOG_LEVEL_ERR, LOG_PREFIX "sscanf failed for matched metric line");
+                         break;
+                     }
+                }
+                zabbix_log(LOG_LEVEL_DEBUG, LOG_PREFIX "unit: %s; stat file: %s, metric: %s; value: %d", unit, stat_file, metric, value);
+                SET_UI64_RESULT(result, value);
+                ret = SYSINFO_RET_OK;
+                break;
+        }
+        zbx_fclose(file);
+        free(stat_file);
+        free(filename);
+        free(metric2);
+
+        if (SYSINFO_RET_FAIL == ret)
+                SET_MSG_RESULT(result, zbx_strdup(NULL, "Cannot find a line with requested metric in blkio file"));
+
+        return ret;
+}
