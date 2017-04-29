@@ -6,7 +6,7 @@ char *cgroup_dir = NULL, *cpu_cgroup = NULL;
 
 /******************************************************************************
  *                                                                            *
- * Function: cgroup_dir_detect                                                *
+ * Function: cgroup_init                                                      *
  *                                                                            *
  * Purpose: it should find cgroup metric directory                            *
  *                                                                            *
@@ -16,7 +16,7 @@ char *cgroup_dir = NULL, *cpu_cgroup = NULL;
  * Author: Jan Garaj <info@monitoringartist.com>                              *
  *                                                                            *
  ******************************************************************************/
-int     cgroup_dir_detect()
+int     cgroup_init()
 {
         zabbix_log(LOG_LEVEL_DEBUG, LOG_PREFIX "in cgroup_dir_detect()");
 
@@ -168,14 +168,14 @@ int     SYSTEMD_CGROUP_MEM(AGENT_REQUEST *request, AGENT_RESULT *result)
  ******************************************************************************/
 int     SYSTEMD_CGROUP_CPU(AGENT_REQUEST *request, AGENT_RESULT *result)
 {
-        zabbix_log(LOG_LEVEL_DEBUG, LOG_PREFIX "In cgroup_cpu()");
+        zabbix_log(LOG_LEVEL_DEBUG, LOG_PREFIX "in cgroup_cpu()");
 
         char    *unit, *metric;
         int     ret = SYSINFO_RET_FAIL;
 
         if (2 != request->nparam)
         {
-                zabbix_log(LOG_LEVEL_ERR, LOG_PREFIX "Invalid number of parameters: %d",  request->nparam);
+                zabbix_log(LOG_LEVEL_ERR, LOG_PREFIX "invalid number of parameters: %d",  request->nparam);
                 SET_MSG_RESULT(result, strdup("Invalid number of parameters"));
                 return SYSINFO_RET_FAIL;
         }
@@ -211,7 +211,7 @@ int     SYSTEMD_CGROUP_CPU(AGENT_REQUEST *request, AGENT_RESULT *result)
         FILE    *file;
         if (NULL == (file = fopen(filename, "r")))
         {
-                zabbix_log(LOG_LEVEL_ERR, LOG_PREFIX "Cannot open metric file: '%s'", filename);
+                zabbix_log(LOG_LEVEL_ERR, LOG_PREFIX "cannot open metric file: '%s'", filename);
                 free(filename);
                 SET_MSG_RESULT(result, zbx_dsprintf(NULL, "Cannot open %s file", ++stat_file));
                 return SYSINFO_RET_FAIL;
@@ -224,7 +224,7 @@ int     SYSTEMD_CGROUP_CPU(AGENT_REQUEST *request, AGENT_RESULT *result)
         memcpy(metric2 + strlen(metric), " ", 2);
         zbx_uint64_t    value = 0;
         zbx_uint64_t    result_value = 0;
-        zabbix_log(LOG_LEVEL_DEBUG, LOG_PREFIX "Looking metric %s in cpuacct.stat/cpu.stat file", metric);
+        zabbix_log(LOG_LEVEL_DEBUG, LOG_PREFIX "looking metric %s in cpuacct.stat/cpu.stat file", metric);
         while (NULL != fgets(line, sizeof(line), file))
         {
                 if (0 != strcmp("total", metric) && 0 != strncmp(line, metric2, strlen(metric2))) {
