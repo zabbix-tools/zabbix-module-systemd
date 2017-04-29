@@ -13,6 +13,8 @@ char *cgroup_dir = NULL, *cpu_cgroup = NULL;
  * Return value: SYSINFO_RET_FAIL - cgroup directory was not found            *
  *               SYSINFO_RET_OK - cgroup directory was found                  *
  *                                                                            *
+ * Author: Jan Garaj <info@monitoringartist.com>                              *
+ *                                                                            *
  ******************************************************************************/
 int     cgroup_dir_detect()
 {
@@ -75,6 +77,8 @@ int     cgroup_dir_detect()
  * Return value: SYSINFO_RET_FAIL - function failed, item will be marked      *
  *                                 as not supported by zabbix                 *
  *               SYSINFO_RET_OK - success                                     *
+ *                                                                            *
+ * Author: Jan Garaj <info@monitoringartist.com>                              *
  *                                                                            *
  * Notes: https://www.kernel.org/doc/Documentation/cgroups/memory.txt         *
  ******************************************************************************/
@@ -156,6 +160,9 @@ int     SYSTEMD_CGROUP_MEM(AGENT_REQUEST *request, AGENT_RESULT *result)
  * Return value: SYSINFO_RET_FAIL - function failed, item will be marked      *
  *                                 as not supported by zabbix                 *
  *               SYSINFO_RET_OK - success                                     *
+ *                                                                            *
+ *                                                                            *
+ * Author: Jan Garaj <info@monitoringartist.com>                              *
  *                                                                            *
  * Notes: https://www.kernel.org/doc/Documentation/cgroups/cpuacct.txt        *
  ******************************************************************************/
@@ -261,6 +268,9 @@ int     SYSTEMD_CGROUP_CPU(AGENT_REQUEST *request, AGENT_RESULT *result)
  * Return value: SYSINFO_RET_FAIL - function failed, item will be marked      *
  *                                 as not supported by zabbix                 *
  *               SYSINFO_RET_OK - success                                     *
+ *                                                                            *
+ *                                                                            *
+ * Author: Jan Garaj <info@monitoringartist.com>                              *
  *                                                                            *
  * Notes: https://www.kernel.org/doc/Documentation/cgroups/blkio-controller.txt
  ******************************************************************************/
