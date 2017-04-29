@@ -103,7 +103,7 @@ $ zabbix_get -k systemd.cgroup.cpu[dbus.service,total]
 $ zabbix_get -k systemd.cgroup.mem[dbus.service,rss]
 663552
 
-# total queues iops of dbus.service
+# total queued iops of dbus.service
 $ zabbix_get -s 127.0.0.1 -k systemd.cgroup.dev[dbus.service,blkio.io_queued,Total]
 0
 ```
