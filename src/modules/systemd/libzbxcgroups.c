@@ -122,7 +122,7 @@ int     SYSTEMD_CGROUP_MEM(AGENT_REQUEST *request, AGENT_RESULT *result)
         }
         zbx_fclose(file);
 
-        free(unit);
+        //free(unit);
         free(filename);
         free(metric2);
 
