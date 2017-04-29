@@ -1,8 +1,8 @@
 #include "libzbxsystemd.h"
 #include "libzbxcgroups.h"
 
-// cgroup mount directory
-char *cgroup_dir = NULL;
+// cgroup directories
+char *cgroup_dir = NULL, *cpu_cgroup = NULL;
 
 /******************************************************************************
  *                                                                            *
@@ -21,6 +21,7 @@ int     cgroup_dir_detect()
         char path[512];
         char *temp1, *temp2;
         FILE *fp;
+        size_t ddir_size;
 
         if ((fp = fopen("/proc/mounts", "r")) == NULL)
         {
@@ -38,6 +39,23 @@ int     cgroup_dir_detect()
                 cgroup_dir = string_replace(temp2, "cpuset", "");
                 free(temp2);
                 zabbix_log(LOG_LEVEL_DEBUG, LOG_PREFIX "detected cgroup mount directory: %s", cgroup_dir);
+
+                // detect cpu_cgroup - JoinController cpu,cpuacct
+                cgroup = "cpu,cpuacct/";
+                ddir_size = strlen(cgroup) + strlen(cgroup_dir) + 1;
+                ddir = malloc(ddir_size);
+                zbx_strlcpy(ddir, cgroup_dir, ddir_size);
+                zbx_strlcat(ddir, cgroup, ddir_size);
+                if (NULL != (dir = opendir(ddir)))
+                {
+                    closedir(dir);
+                    cpu_cgroup = "cpu,cpuacct/";
+                    zabbix_log(LOG_LEVEL_DEBUG, LOG_PREFIX "cpu_cgroup is JoinController cpu,cpuacct");
+                } else {
+                    cpu_cgroup = "cpuacct/";
+                    zabbix_log(LOG_LEVEL_DEBUG, LOG_PREFIX "cpu_cgroup is cpuacct");
+                }
+
                 pclose(fp);
                 return SYSINFO_RET_OK;
             }
