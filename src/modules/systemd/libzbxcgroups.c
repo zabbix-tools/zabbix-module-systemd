@@ -42,7 +42,7 @@ int     cgroup_dir_detect()
                 zabbix_log(LOG_LEVEL_DEBUG, LOG_PREFIX "detected cgroup mount directory: %s", cgroup_dir);
 
                 // detect cpu_cgroup - JoinController cpu,cpuacct
-                cgroup = "cpu,cpuacct/";
+                cgroup = "cpu,cpuacct/system.slice";
                 ddir_size = strlen(cgroup) + strlen(cgroup_dir) + 1;
                 ddir = malloc(ddir_size);
                 zbx_strlcpy(ddir, cgroup_dir, ddir_size);
@@ -50,10 +50,10 @@ int     cgroup_dir_detect()
                 if (NULL != (dir = opendir(ddir)))
                 {
                     closedir(dir);
-                    cpu_cgroup = "cpu,cpuacct/";
+                    cpu_cgroup = "cpu,cpuacct/system.slice/";
                     zabbix_log(LOG_LEVEL_DEBUG, LOG_PREFIX "cpu_cgroup is JoinController cpu,cpuacct");
                 } else {
-                    cpu_cgroup = "cpuacct/";
+                    cpu_cgroup = "cpuacct/system.slice/";
                     zabbix_log(LOG_LEVEL_DEBUG, LOG_PREFIX "cpu_cgroup is cpuacct");
                 }
 
@@ -149,7 +149,7 @@ int     SYSTEMD_CGROUP_MEM(AGENT_REQUEST *request, AGENT_RESULT *result)
 
 /******************************************************************************
  *                                                                            *
- * Function: cgroup_cpu                                                       *
+ * Function: SYSTEMD_CGROUP_CPU                                               *
  *                                                                            *
  * Purpose: cpu metrics                                                       *
  *                                                                            *
@@ -159,7 +159,7 @@ int     SYSTEMD_CGROUP_MEM(AGENT_REQUEST *request, AGENT_RESULT *result)
  *                                                                            *
  * Notes: https://www.kernel.org/doc/Documentation/cgroups/cpuacct.txt        *
  ******************************************************************************/
-int     cgroup_cpu(AGENT_REQUEST *request, AGENT_RESULT *result)
+int     SYSTEMD_CGROUP_CPU(AGENT_REQUEST *request, AGENT_RESULT *result)
 {
         zabbix_log(LOG_LEVEL_DEBUG, LOG_PREFIX "In cgroup_cpu()");
 
