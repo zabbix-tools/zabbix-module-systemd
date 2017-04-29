@@ -19,8 +19,9 @@ int     cgroup_dir_detect()
         zabbix_log(LOG_LEVEL_DEBUG, LOG_PREFIX "in cgroup_dir_detect()");
 
         char path[512];
-        char *temp1, *temp2;
+        char *temp1, *temp2, *cgroup, *ddir;
         FILE *fp;
+        DIR *dir;
         size_t ddir_size;
 
         if ((fp = fopen("/proc/mounts", "r")) == NULL)
@@ -197,7 +198,6 @@ int     cgroup_cpu(AGENT_REQUEST *request, AGENT_RESULT *result)
         char    *filename = malloc(filename_size);
         zbx_strlcpy(filename, cgroup_dir, filename_size);
         zbx_strlcat(filename, cgroup, filename_size);
-        zbx_strlcat(filename, driver, filename_size);
         zbx_strlcat(filename, unit, filename_size);
         zbx_strlcat(filename, stat_file, filename_size);
         zabbix_log(LOG_LEVEL_DEBUG, LOG_PREFIX "metric source file: %s", filename);
