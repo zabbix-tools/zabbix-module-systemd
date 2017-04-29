@@ -33,7 +33,7 @@ int zbx_module_api_version() {
 
 int zbx_module_init()
 {
-    zabbix_log(LOG_LEVEL_DEBUG, LOG_PREFIX "starting v%s", PACKAGE_VERSION);
+    zabbix_log(LOG_LEVEL_DEBUG, LOG_PREFIX "starting v%s, compiled: %s %s", PACKAGE_VERSION, __DATE__, __TIME__);
     mainpid = getpid();
     cgroup_dir_detect();
     return ZBX_MODULE_OK;

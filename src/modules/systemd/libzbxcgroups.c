@@ -1,6 +1,9 @@
 #include "libzbxsystemd.h"
 #include "libzbxcgroups.h"
 
+// cgroup mount directory
+char *cgroup_dir = NULL;
+
 /******************************************************************************
  *                                                                            *
  * Function: cgroup_dir_detect                                                *
