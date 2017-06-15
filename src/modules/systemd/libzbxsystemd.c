@@ -1,4 +1,5 @@
 #include "libzbxsystemd.h"
+#include "libzbxcgroups.h"
 
 // pid that initialised the module, before forking workers.
 int mainpid = 0;
@@ -20,6 +21,9 @@ ZBX_METRIC *zbx_module_item_list()
     { "systemd.unit.discovery",     CF_HAVEPARAMS,  SYSTEMD_UNIT_DISCOVERY,     NULL },
     { "systemd.service.info",       CF_HAVEPARAMS,  SYSTEMD_SERVICE_INFO,       "dbus.service" },
     { "systemd.service.discovery",  CF_HAVEPARAMS,  SYSTEMD_SERVICE_DISCOVERY,  NULL },
+    { "systemd.cgroup.cpu",         CF_HAVEPARAMS,  SYSTEMD_CGROUP_CPU,         "dbus.service,total" },
+    { "systemd.cgroup.dev",         CF_HAVEPARAMS,  SYSTEMD_CGROUP_DEV,         "dbus.service,blkio.io_queued,Total" },
+    { "systemd.cgroup.mem",         CF_HAVEPARAMS,  SYSTEMD_CGROUP_MEM,         "dbus.service,rss" },
     { NULL }
   };
 
@@ -32,8 +36,9 @@ int zbx_module_api_version() {
 
 int zbx_module_init()
 {
-    zabbix_log(LOG_LEVEL_DEBUG, LOG_PREFIX "starting v%s", PACKAGE_VERSION);
+    zabbix_log(LOG_LEVEL_DEBUG, LOG_PREFIX "starting v%s, compiled: %s %s", PACKAGE_VERSION, __DATE__, __TIME__);
     mainpid = getpid();
+    cgroup_init();
     return ZBX_MODULE_OK;
 }
 
