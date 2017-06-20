@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <dirent.h>
 
 // Zabbix source headers
 #include <log.h>
