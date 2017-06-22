@@ -21,11 +21,24 @@ $ sudo make install
 If you are using a packaged version of Zabbix, you may with to redirect the
 installation directories as follows:
 
-```
+```bash
 $ sudo make prefix=/usr sysconfdir=/etc libdir=/usr/lib64 install
 ```
 
 ## Available keys
+
+Note: `systemd.cgroup.*` keys require cgroup accounting. The system default
+for this setting may be controlled with `Default*Accounting` settings in
+[systemd-system.conf](https://www.freedesktop.org/software/systemd/man/systemd-system.conf.html).
+
+Example how to enable cgroup accounting:
+
+```bash
+$ sed -i -e "s/.*DefaultCPUAccounting=.*/DefaultCPUAccounting=yes/g" /etc/systemd/system.conf
+$ sed -i -e "s/.*DefaultBlockIOAccounting=.*/DefaultBlockIOAccounting=yes/g" /etc/systemd/system.conf
+$ sed -i -e "s/.*DefaultMemoryAccounting=.*/DefaultMemoryAccounting=yes/g" /etc/systemd/system.conf
+$ systemctl daemon-reexec
+```
 
 | Key | Description |
 | ------------------------------ | ----------- |
