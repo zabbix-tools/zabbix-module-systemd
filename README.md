@@ -52,6 +52,16 @@ $ systemctl daemon-reexec
 | **systemd.cgroup.mem[\<unit\>,\<mmetric\>]** | **Memory metrics:**<br>**mmetric** - any available memory metric in the pseudo-file memory.stat, e.g.: *cache, rss, mapped_file, pgpgin, pgpgout, swap, pgfault, pgmajfault, inactive_anon, active_anon, inactive_file, active_file, unevictable, hierarchical_memory_limit, hierarchical_memsw_limit, total_cache, total_rss, total_mapped_file, total_pgpgin, total_pgpgout, total_swap, total_pgfault, total_pgmajfault, total_inactive_anon, total_active_anon, total_inactive_file, total_active_file, total_unevictable*, Note: if you have problem with memory metrics, be sure that memory cgroup subsystem is enabled - kernel parameter: *cgroup_enable=memory* |
 | **systemd.modver[]** | Version of the loaded systemd module. |
 
+## Cgroup metrics
+
+To support cgroup metrics you need to enable CPU/mem/... accounting in ``` /etc/systemd/system.conf ```
+
+```
+CPUAccounting=yes
+BlockIOAccounting=yes
+MemoryAccounting=yes
+```
+
 ## Examples
 
 ```bash
