@@ -61,6 +61,7 @@ CPUAccounting=yes
 BlockIOAccounting=yes
 MemoryAccounting=yes
 ```
+After that you need to reboot host or do ``` systemctl daemon-reexec ```
 
 ## Examples
 
