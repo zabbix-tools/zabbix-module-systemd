@@ -453,6 +453,7 @@ static int SYSTEMD_SERVICE_DISCOVERY(AGENT_REQUEST *request, AGENT_RESULT *resul
     dbus_get_property_json(&j, "{#SERVICE.DISPLAYNAME}", path, SYSTEMD_UNIT_INTERFACE, "Description");
     dbus_get_property_json(&j, "{#SERVICE.PATH}", path, SYSTEMD_UNIT_INTERFACE, "FragmentPath");
     dbus_get_property_json(&j, "{#SERVICE.STARTUPNAME}", path, SYSTEMD_UNIT_INTERFACE, "UnitFileState");
+    dbus_get_property_json(&j, "{#SERVICE.CONDITION}", path, SYSTEMD_UNIT_INTERFACE, "Condition");
     zbx_json_close(&j);
 
 next_unit:
