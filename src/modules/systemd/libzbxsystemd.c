@@ -449,7 +449,7 @@ static int SYSTEMD_SERVICE_DISCOVERY(AGENT_REQUEST *request, AGENT_RESULT *resul
     }
 
     dbus_message_iter_get_basic(&unit, &value);
-    if (!systemd_unit_is_service(path))
+    if (!systemd_unit_is_service(value.str))
       goto next_unit;
 
     // send property values
