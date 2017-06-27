@@ -53,6 +53,12 @@ systemctl restart zabbix-agent
 | **systemd.cgroup.mem[\<unit\>,\<mmetric\>]** | **Memory metrics:**<br>**mmetric** - any available memory metric in the pseudo-file memory.stat, e.g.: *cache, rss, mapped_file, pgpgin, pgpgout, swap, pgfault, pgmajfault, inactive_anon, active_anon, inactive_file, active_file, unevictable, hierarchical_memory_limit, hierarchical_memsw_limit, total_cache, total_rss, total_mapped_file, total_pgpgin, total_pgpgout, total_swap, total_pgfault, total_pgmajfault, total_inactive_anon, total_active_anon, total_inactive_file, total_active_file, total_unevictable*.<br>Note: if you have problem with memory metrics, be sure that memory cgroup subsystem is enabled - kernel parameter: *cgroup_enable=memory* |
 | **systemd.modver[]** | Version of the loaded systemd module. |
 
+## Templates
+
+Available examples of monitoring templates:
+
+- [Template App systemd services.xml](https://raw.githubusercontent.com/cavaliercoder/zabbix-module-systemd/master/templates/Template%20App%20systemd%20services.xml) - discovery of enabled systemd serviced with True condition result.
+
 ## Examples
 
 ```bash
@@ -72,7 +78,8 @@ $ zabbix_get -k systemd.unit.discovery[socket]
       "{#UNIT.SUBSTATE}": "running",
       "{#UNIT.OBJECTPATH}": "/org/freedesktop/systemd1/unit/dbus_2esocket",
       "{#UNIT.FRAGMENTPATH}": "/usr/lib/systemd/system/dbus.socket",
-      "{#UNIT.UNITFILESTATE}": "static"
+      "{#UNIT.UNITFILESTATE}": "static",
+      "{#UNIT.CONDITIONRESULT}": "True"
     },
     ...
   ]
@@ -95,7 +102,8 @@ $ zabbix_get -k systemd.service.discovery[service]
       "{#SERVICE.NAME}": "dbus.service",
       "{#SERVICE.DISPLAYNAME}": "D-Bus System Message Bus",
       "{#SERVICE.PATH}": "/usr/lib/systemd/system/dbus.service",
-      "{#SERVICE.STARTUPNAME}": "static"
+      "{#SERVICE.STARTUPNAME}": "static",
+      "{#SERVICE.CONDITIONRESULT}": "True"
     },
     ...
   ]

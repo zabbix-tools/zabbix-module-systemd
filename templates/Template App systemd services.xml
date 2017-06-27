@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <zabbix_export>
     <version>3.2</version>
-    <date>2017-04-29T14:30:46Z</date>
+    <date>2017-06-24T07:20:02Z</date>
     <groups>
         <group>
             <name>Templates</name>
@@ -50,12 +50,18 @@
                     <privatekey/>
                     <port/>
                     <filter>
-                        <evaltype>0</evaltype>
+                        <evaltype>1</evaltype>
                         <formula/>
                         <conditions>
                             <condition>
                                 <macro>{#SERVICE.STARTUPNAME}</macro>
                                 <value>enabled</value>
+                                <operator>8</operator>
+                                <formulaid>B</formulaid>
+                            </condition>
+                            <condition>
+                                <macro>{#SERVICE.CONDITIONRESULT}</macro>
+                                <value>True</value>
                                 <operator>8</operator>
                                 <formulaid>A</formulaid>
                             </condition>
