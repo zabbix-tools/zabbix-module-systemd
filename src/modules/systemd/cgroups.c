@@ -1,5 +1,4 @@
 #include "libzbxsystemd.h"
-#include "libzbxcgroups.h"
 
 // cgroup directories
 char *cgroup_dir = NULL, *cpu_cgroup = NULL;

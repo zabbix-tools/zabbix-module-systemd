@@ -1,15 +1,21 @@
 #include "libzbxsystemd.h"
-#include "libzbxcgroups.h"
 
 // pid that initialised the module, before forking workers.
 int mainpid = 0;
 
+// items in this file
 static int SYSTEMD_MODVER(AGENT_REQUEST*, AGENT_RESULT*);
 static int SYSTEMD_MANAGER(AGENT_REQUEST *request, AGENT_RESULT *result);
 static int SYSTEMD_UNIT(AGENT_REQUEST*, AGENT_RESULT*);
 static int SYSTEMD_UNIT_DISCOVERY(AGENT_REQUEST*, AGENT_RESULT*);
 static int SYSTEMD_SERVICE_INFO(AGENT_REQUEST*, AGENT_RESULT*);
 static int SYSTEMD_SERVICE_DISCOVERY(AGENT_REQUEST*, AGENT_RESULT*);
+
+// items in cgroups.c
+int cgroup_init();
+int SYSTEMD_CGROUP_CPU(AGENT_REQUEST*, AGENT_RESULT*);
+int SYSTEMD_CGROUP_DEV(AGENT_REQUEST*, AGENT_RESULT*);
+int SYSTEMD_CGROUP_MEM(AGENT_REQUEST*, AGENT_RESULT*);
 
 ZBX_METRIC *zbx_module_item_list()
 {
