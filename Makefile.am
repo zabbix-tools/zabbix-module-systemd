@@ -1,8 +1,13 @@
 ACLOCAL_AMFLAGS = -Im4
 
+if SEMODULE
+SEMODULE_SUBDIRS = \
+	selinux
+endif
+
 SUBDIRS = \
 	src/modules/systemd \
-	selinux
+	$(SEMODULE_SUBDIRS)
 
 EXTRA_DIST = \
 	README.md \

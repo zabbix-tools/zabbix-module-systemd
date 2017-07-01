@@ -42,6 +42,18 @@ else
 fi
 
 dnl
+dnl Enable selinux module
+dnl
+AC_ARG_ENABLE(semodule,[  --enable-semodule       build SELinux module],
+[case "${enableval}" in
+  yes) semodule=yes ;;
+  no)  semodule=no ;;
+  *) AC_MSG_ERROR([bad value ${enableval} for --enable-semodule]) ;;
+esac],
+[semodule=no])
+AM_CONDITIONAL(SEMODULE, test "x$semodule" = "xyes")
+
+dnl
 dnl output
 dnl
 AC_CONFIG_FILES([
@@ -69,6 +81,9 @@ fi
 if test "x$DBUS_CPPFLAGS" != "x"; then
   echo "    d-bus:               ${DBUS_CPPFLAGS}"
 fi
+
+echo "
+  Enable SELinux module: ${semodule}"
 
 echo
 echo "************************************************************"

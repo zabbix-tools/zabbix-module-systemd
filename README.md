@@ -13,16 +13,16 @@ The following packages are available:
 ## Install
 
 ```bash
-$ ./configure --with-zabbix=/usr/src/zabbix-3.2.5
-$ make
-$ sudo make install
+./configure --with-zabbix=/usr/src/zabbix-3.2.6
+make
+sudo make install
 ```
 
 If you are using a packaged version of Zabbix, you may with to redirect the
 installation directories as follows:
 
 ```bash
-$ sudo make prefix=/usr sysconfdir=/etc libdir=/usr/lib64 install
+sudo make prefix=/usr sysconfdir=/etc libdir=/usr/lib64 install
 ```
 
 ## Available keys
@@ -34,11 +34,11 @@ for this setting may be controlled with `Default*Accounting` settings in
 Example how to enable cgroup accounting for Zabbix systemd monitoring:
 
 ```bash
-$ sed -i -e "s/.*DefaultCPUAccounting=.*/DefaultCPUAccounting=yes/g" /etc/systemd/system.conf
-$ sed -i -e "s/.*DefaultBlockIOAccounting=.*/DefaultBlockIOAccounting=yes/g" /etc/systemd/system.conf
-$ sed -i -e "s/.*DefaultMemoryAccounting=.*/DefaultMemoryAccounting=yes/g" /etc/systemd/system.conf
-$ systemctl daemon-reexec
-$ systemctl restart zabbix-agent
+sed -i -e "s/.*DefaultCPUAccounting=.*/DefaultCPUAccounting=yes/g" /etc/systemd/system.conf
+sed -i -e "s/.*DefaultBlockIOAccounting=.*/DefaultBlockIOAccounting=yes/g" /etc/systemd/system.conf
+sed -i -e "s/.*DefaultMemoryAccounting=.*/DefaultMemoryAccounting=yes/g" /etc/systemd/system.conf
+systemctl daemon-reexec
+systemctl restart zabbix-agent
 ```
 
 | Key | Description |
@@ -124,10 +124,10 @@ $ zabbix_get -s 127.0.0.1 -k systemd.cgroup.dev[dbus.service,blkio.io_queued,Tot
 
 ## SELinux
 
-If you have configure SELinux in enforcing mode, you might see the following
+If you have configured SELinux in enforcing mode, you might see the following
 error in your Zabbix logs, when attempting to use item keys from this module:
 
-```
+```text
 [systemd] org.freedesktop.DBus.Error.AccessDenied: SELinux policy denies access
 ```
 
@@ -136,8 +136,17 @@ explicitely allow the Zabbix agent to communicate with D-Bus. This package
 includes an extension module to grant Zabbix only the permissions it requires
 for read-only access.
 
-After installing this package, the SELinux module can be enabled by running:
+To build the SELinux module, add `--enable-semodule` to the build configuration:
 
 ```bash
-$ semodule -v -i /usr/share/selinux/packages/zabbix-module-systemd/libzbxsystemd.pp
+./configure --with-zabbix=/usr/src/zabbix-3.2.6 --enable-semodule
+make
+sudo make prefix=/usr sysconfdir=/etc libdir=/usr/lib64 install
+```
+
+After installing this package, the SELinux module `libzbxsystemd.pp` can be
+enabled by running:
+
+```bash
+semodule -v -i /usr/share/selinux/packages/zabbix-module-systemd/libzbxsystemd.pp
 ```
