@@ -143,6 +143,9 @@ int systemd_service_state_code(const char *state)
     NULL
   };
 
+  if (NULL == state)
+    return -1;
+
   for(int i = 0; states[i]; i++)
     if (0 == strncmp(state, states[i], 13))
       return codes[i];
@@ -159,12 +162,18 @@ int systemd_service_startup_code(const char *state)
   // Map systemd UnitFileStates to Zabbix service startup codes.
   // Code definitions mimic the Windows service startup codes.
   // https://www.zabbix.com/documentation/3.2/manual/config/items/itemtypes/zabbix_agent/win_keys
-  const int codes[] = { 0, 2, 0, 2, 3, 3, 0, 2, 4 };
+  const int codes[] = { 0, 2, 0, 2, 3, 3, 0, 2, 4, 4, 2 };
   const char *states[] = {
     "enabled", "enabled-runtime", "linked", "linked-runtime", "masked",
-    "masked-runtime", "static", "disabled", "invalid",
+    "masked-runtime", "static", "disabled", "invalid", "bad", "indirect",
     NULL
   };
+
+  if (NULL == state)
+    return -1;
+
+  if ('\0' == *state)
+    return 2;
 
   for(int i = 0; states[i]; i++)
     if (0 == strncmp(state, states[i], 13))
