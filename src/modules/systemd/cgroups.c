@@ -345,6 +345,8 @@ int     SYSTEMD_CGROUP_DEV(AGENT_REQUEST *request, AGENT_RESULT *result)
 
     if (SYSINFO_RET_FAIL == ret)
         SET_MSG_RESULT(result, zbx_strdup(NULL, "Cannot find a line with requested metric in blkio file"));
+    
+    // TODO: fix blkio metrics that are known but are not available until > 0
 
     return ret;
 }
