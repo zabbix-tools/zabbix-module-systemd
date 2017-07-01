@@ -1,4 +1,4 @@
-# Native Zabbix systemd monitoring
+# Native Zabbix systemd monitoring [![Build Status](https://travis-ci.org/cavaliercoder/zabbix-module-systemd.svg?branch=master)](https://travis-ci.org/cavaliercoder/zabbix-module-systemd)
 
 zabbix-module-systemd is a loadable Zabbix module that enables Zabbix to query
 the systemd D-Bus API for native and granular system state monitoring.

@@ -1,0 +1,22 @@
+dist: trusty # required for D-Bus >= 1.6
+sudo: false
+language: c
+
+env:
+  - ZABBIX_VERSION=3.2.6
+  - ZABBIX_VERSION=3.0.9
+  - ZABBIX_VERSION=2.4.8
+  - ZABBIX_VERSION=2.2.18
+
+addons:
+  apt:
+    packages:
+    - libdbus-1-dev
+
+install:
+  - curl -LO http://sourceforge.net/projects/zabbix/files/ZABBIX%20Latest%20Stable/${ZABBIX_VERSION}/zabbix-${ZABBIX_VERSION}.tar.gz
+  - tar -xzf zabbix-${ZABBIX_VERSION}.tar.gz
+
+script:
+  - ./autogen.sh
+  - ./configure --with-zabbix=${PWD}/zabbix-${ZABBIX_VERSION} && make
