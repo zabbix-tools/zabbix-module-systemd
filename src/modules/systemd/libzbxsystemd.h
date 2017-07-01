@@ -16,7 +16,6 @@
 #include <log.h>
 #include <zbxjson.h>
 #include <version.h>
-#include <db.h>
 
 #ifndef MAX
 #define MAX(a, b)     ( (a) < (b) ? (b) : (a) )
