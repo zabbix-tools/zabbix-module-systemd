@@ -28,7 +28,7 @@ rpm: dist
 		~/rpmbuild/SOURCES/$(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.gz
 	rpmbuild -ba ~/rpmbuild/SPECS/$(PACKAGE_NAME).spec
 
-check-local:
+check-local: all
 	zabbix_agent_bench \
 		-keys=bench.keys \
 		-iterations=1 \

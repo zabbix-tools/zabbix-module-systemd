@@ -15,3 +15,17 @@ systemd.unit.discovery
   systemd.unit[{#UNIT.NAME},,CanReload]
   systemd.unit[{#UNIT.NAME},,CanIsolate]
 systemd.service.discovery
+  systemd.service.info[{#SERVICE.NAME}]
+  systemd.service.info[{#SERVICE.NAME},description]
+  systemd.service.info[{#SERVICE.NAME},displayname]
+  systemd.service.info[{#SERVICE.NAME},path]
+  systemd.service.info[{#SERVICE.NAME},startup]
+  systemd.service.info[{#SERVICE.NAME},state]
+  systemd.service.info[{#SERVICE.NAME},user]
+
+
+systemd.cgroup.cpu[zabbix-agent.service,nr_periods]
+systemd.cgroup.cpu[zabbix-agent.service,nr_throttled]
+systemd.cgroup.cpu[zabbix-agent.service,throttled_time]
+
+systemd.cgroup.dev[zabbix-agent.service,blkio.io_merged,Total]
