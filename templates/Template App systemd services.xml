@@ -61,7 +61,7 @@
                             </condition>
                             <condition>
                                 <macro>{#SERVICE.CONDITIONRESULT}</macro>
-                                <value>True</value>
+                                <value>yes</value>
                                 <operator>8</operator>
                                 <formulaid>A</formulaid>
                             </condition>
