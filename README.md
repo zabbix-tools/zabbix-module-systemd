@@ -1,7 +1,7 @@
 # Native Zabbix systemd monitoring [![Build Status](https://travis-ci.org/cavaliercoder/zabbix-module-systemd.svg?branch=master)](https://travis-ci.org/cavaliercoder/zabbix-module-systemd)
 
-zabbix-module-systemd is a loadable Zabbix module that enables Zabbix to query
-the systemd D-Bus API for native and granular system state monitoring.
+Zabbix module that enables Zabbix to query the systemd D-Bus API for native and
+granular system state monitoring + relative cgroup (CPU, MEM, IO, ...) metrics.
 
 ## Download
 
@@ -44,14 +44,20 @@ systemctl restart zabbix-agent
 | Key | Description |
 | ------------------------------ | ----------- |
 | **systemd[\<property\>]** | Return the given property of the systemd Manager interface. |
-| **systemd.unit[unit,\<interface\>,\<property\>]** | Return the given property of the given interface of the given unit name. For a list of available unit interfaces and properties, see the [D-Bus API of systemd/PID 1](https://www.freedesktop.org/wiki/Software/systemd/dbus). |
+| **systemd.unit[unit,\<interface\>,\<property\>]** | Return the given property of the given interface of the given unit name. For a list of available unit interfaces and properties, see the [D-Bus API of systemd/PID 1](https://www.freedesktop.org/wiki/Software/systemd/dbus) or [Debugging](#debugging) |
 | **systemd.unit.discovery[\<type\>]** | Discovery all known units of the given type (default: `all`). |
-| **systemd.service.info[service,\<param\>]** | Query various service stats, similar to `service.info` on the Windows agent. |
+| **systemd.service.info[service,\<param\>]** | Query various service stats (state, displayname, path, user, startup, description), similar to `service.info` on the Windows agent. |
 | **systemd.service.discovery[]** | Discovery all known services. |
 | **systemd.cgroup.cpu[\<unit\>,\<cmetric\>]** | **CPU metrics:**<br>**cmetric** - any available CPU metric in the pseudo-file cpuacct.stat/cpu.stat, e.g.: *system, user, total (current sum of system/user* or cgroup [throttling metrics](https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Resource_Management_Guide/sec-cpu.html): *nr_throttled, throttled_time*<br>Note: CPU user/system/total metrics must be recalculated to % utilization value by Zabbix - *Delta (speed per second)*. |
 | **systemd.cgroup.dev[\<unit\>,\<bfile\>,\<bmetric\>]** | **Blk IO metrics:**<br>**bfile** - cgroup blkio pseudo-file, e.g.: *blkio.io_merged, blkio.io_queued, blkio.io_service_bytes, blkio.io_serviced, blkio.io_service_time, blkio.io_wait_time, blkio.sectors, blkio.time, blkio.avg_queue_size, blkio.idle_time, blkio.dequeue, ...*<br>**bmetric** - any available blkio metric in selected pseudo-file, e.g.: *Total*. Option for selected block device only is also available e.g. *'8:0 Sync'* (quotes must be used in key parameter in this case)<br>Note: Some pseudo blkio files are available only if kernel config *CONFIG_DEBUG_BLK_CGROUP=y*. |
 | **systemd.cgroup.mem[\<unit\>,\<mmetric\>]** | **Memory metrics:**<br>**mmetric** - any available memory metric in the pseudo-file memory.stat, e.g.: *cache, rss, mapped_file, pgpgin, pgpgout, swap, pgfault, pgmajfault, inactive_anon, active_anon, inactive_file, active_file, unevictable, hierarchical_memory_limit, hierarchical_memsw_limit, total_cache, total_rss, total_mapped_file, total_pgpgin, total_pgpgout, total_swap, total_pgfault, total_pgmajfault, total_inactive_anon, total_active_anon, total_inactive_file, total_active_file, total_unevictable*.<br>Note: if you have problem with memory metrics, be sure that memory cgroup subsystem is enabled - kernel parameter: *cgroup_enable=memory* |
 | **systemd.modver[]** | Version of the loaded systemd module. |
+
+## Templates
+
+Available examples of monitoring templates:
+
+- [Template App systemd services.xml](https://raw.githubusercontent.com/cavaliercoder/zabbix-module-systemd/master/templates/Template%20App%20systemd%20services.xml) - discovery of enabled systemd serviced with True condition result.
 
 ## Examples
 
@@ -72,7 +78,8 @@ $ zabbix_get -k systemd.unit.discovery[socket]
       "{#UNIT.SUBSTATE}": "running",
       "{#UNIT.OBJECTPATH}": "/org/freedesktop/systemd1/unit/dbus_2esocket",
       "{#UNIT.FRAGMENTPATH}": "/usr/lib/systemd/system/dbus.socket",
-      "{#UNIT.UNITFILESTATE}": "static"
+      "{#UNIT.UNITFILESTATE}": "static",
+      "{#UNIT.CONDITIONRESULT}": "yes"
     },
     ...
   ]
@@ -95,7 +102,8 @@ $ zabbix_get -k systemd.service.discovery[service]
       "{#SERVICE.NAME}": "dbus.service",
       "{#SERVICE.DISPLAYNAME}": "D-Bus System Message Bus",
       "{#SERVICE.PATH}": "/usr/lib/systemd/system/dbus.service",
-      "{#SERVICE.STARTUPNAME}": "static"
+      "{#SERVICE.STARTUPNAME}": "static",
+      "{#SERVICE.CONDITIONRESULT}": "yes"
     },
     ...
   ]
@@ -118,8 +126,28 @@ $ zabbix_get -k systemd.cgroup.mem[dbus.service,rss]
 663552
 
 # total queued iops of dbus.service
-$ zabbix_get -s 127.0.0.1 -k systemd.cgroup.dev[dbus.service,blkio.io_queued,Total]
+$ zabbix_get -k systemd.cgroup.dev[dbus.service,blkio.io_queued,Total]
 0
+```
+
+## Debugging
+
+Please use `systemctl`, `gdbus`, `busctl`, `zabbix_get` utilities for debugging
+systemd unit properties and their values. For example debugging of
+`ConditionResult` property value for sshd service:
+
+```
+$ systemctl show sshd.service | grep ConditionResult
+ConditionResult=yes
+$ gdbus introspect --system --dest org.freedesktop.systemd1 --object-path \
+  /org/freedesktop/systemd1/unit/sshd_2eservice \
+  /org/freedesktop/systemd1/unit/sshd_2eservice | grep ConditionResult
+      readonly b ConditionResult = true;
+$ busctl introspect org.freedesktop.systemd1 /org/freedesktop/systemd1/unit/sshd_2eservice \
+  | grep ConditionResult
+.ConditionResult                    property  b              true                                     emits-change
+$ zabbix_get -k systemd.unit[sshd.service,Unit,ConditionResult]
+1
 ```
 
 ## SELinux
