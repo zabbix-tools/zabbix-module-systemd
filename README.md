@@ -1,7 +1,7 @@
 # Native Zabbix systemd monitoring [![Build Status](https://travis-ci.org/cavaliercoder/zabbix-module-systemd.svg?branch=master)](https://travis-ci.org/cavaliercoder/zabbix-module-systemd)
 
-zabbix-module-systemd is a loadable Zabbix module that enables Zabbix to query
-the systemd D-Bus API for native and granular system state monitoring.
+Zabbix module that enables Zabbix to query the systemd D-Bus API for native and
+granular system state monitoring + relative cgroup (CPU, MEM, IO, ...) metrics.
 
 ## Download
 
@@ -132,9 +132,9 @@ $ zabbix_get -k systemd.cgroup.dev[dbus.service,blkio.io_queued,Total]
 
 ## Debugging
 
-Please use `systemctl`, `gdbus`, `zabbix_get` utilities for debugging systemd
-unit properties and values. For example debugging of `ConditionResult` property
-value for sshd service:
+Please use `systemctl`, `gdbus`, `busctl`, `zabbix_get` utilities for debugging
+systemd unit properties and their values. For example debugging of
+`ConditionResult` property value for sshd service:
 
 ```
 $ systemctl show sshd.service | grep ConditionResult
@@ -143,6 +143,9 @@ $ gdbus introspect --system --dest org.freedesktop.systemd1 --object-path \
   /org/freedesktop/systemd1/unit/sshd_2eservice \
   /org/freedesktop/systemd1/unit/sshd_2eservice | grep ConditionResult
       readonly b ConditionResult = true;
+$ busctl introspect org.freedesktop.systemd1 /org/freedesktop/systemd1/unit/sshd_2eservice \
+  | grep ConditionResult
+.ConditionResult                    property  b              true                                     emits-change
 $ zabbix_get -k systemd.unit[sshd.service,Unit,ConditionResult]
 1
 ```
