@@ -1,8 +1,13 @@
 ACLOCAL_AMFLAGS = -Im4
 
+if SEMODULE
+SEMODULE_SUBDIRS = \
+	selinux
+endif
+
 SUBDIRS = \
 	src/modules/systemd \
-	selinux
+	$(SEMODULE_SUBDIRS)
 
 EXTRA_DIST = \
 	README.md \
@@ -22,3 +27,9 @@ rpm: dist
 		$(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.gz \
 		~/rpmbuild/SOURCES/$(PACKAGE_NAME)-$(PACKAGE_VERSION).tar.gz
 	rpmbuild -ba ~/rpmbuild/SPECS/$(PACKAGE_NAME).spec
+
+check-local: all
+	zabbix_agent_bench \
+		-keys=bench.keys \
+		-iterations=1 \
+		-strict=true

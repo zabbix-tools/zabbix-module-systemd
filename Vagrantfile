@@ -8,9 +8,29 @@ Vagrant.configure("2") do |config|
   config.vm.network "forwarded_port", guest: 10050, host: 10050
   config.vm.provision "shell", inline: <<-SHELL
     set -x
-    yum update -y
+
+    # disable selinux
+    setenforce 0
+    cat > /etc/selinux/config <<EOL
+SELINUX=permissive
+SELINUXTYPE=targeted
+EOL
+
+    # configure systemd accounting
+    cat > /etc/systemd/system.conf <<EOL
+[Manager]
+DefaultCPUAccounting=yes
+DefaultBlockIOAccounting=yes
+DefaultMemoryAccounting=yes
+EOL
+    systemctl daemon-reexec
+
+    # install packages
     rpm -q zabbix-release > /dev/null 2>&1 || \
       rpm -i http://repo.zabbix.com/zabbix/3.2/rhel/7/x86_64/zabbix-release-3.2-1.el7.noarch.rpm
+    yum install -y epel-release
+    yum makecache
+    yum update -y
     yum install -y \
       autoconf \
       automake \
@@ -18,22 +38,24 @@ Vagrant.configure("2") do |config|
       gdb \
       libtool \
       policycoreutils-python \
+      python2-pip \
       rpm-build \
       setools-console \
       strace \
       vim-enhanced \
       zabbix-agent \
       zabbix-get
-    
-    for version in 3.2.4 3.0.8 2.4.8; do
-      if [[ ! -f "zabbix-${version}.tar.gz" ]]; then
-        curl -LO http://sourceforge.net/projects/zabbix/files/ZABBIX%20Latest%20Stable/${version}/zabbix-${version}.tar.gz
-      fi
 
-      if [[ ! -d "/usr/src/zabbix-${version}" ]]; then
-        tar -xz -C /usr/src -f zabbix-${version}.tar.gz
-      fi
-    done
-    ln -s /usr/src/zabbix-3.2.4/ /usr/src/zabbix
+    pip install zabbix-template-converter
+    
+    curl -sLO https://sourceforge.net/projects/zabbixagentbench/files/linux/zabbix_agent_bench-0.4.0.x86_64.tar.gz
+    tar -xzf zabbix_agent_bench-0.4.0.x86_64.tar.gz
+    install -m 0755 \
+      zabbix_agent_bench-0.4.0.x86_64/zabbix_agent_bench \
+      /usr/bin/zabbix_agent_bench
+    
+    # enable zabbix
+    systemctl enable zabbix-agent
+    systemctl start zabbix-agent
   SHELL
 end

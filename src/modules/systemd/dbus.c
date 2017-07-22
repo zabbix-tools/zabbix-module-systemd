@@ -179,6 +179,13 @@ DBusMessageIter* dbus_get_property(
 }
 
 /*
+ * convert DBUS_TYPE_BOOLEAN to yes/no string
+ */
+const char* yes_no(char* b) {
+  return b ? "yes" : "no";
+}
+
+/*
  * dbus_get_property_string fills the given buffer with the value of the given
  * object property.
  */
@@ -192,6 +199,7 @@ int dbus_get_property_string(
 ) {
   DBusMessageIter *iter = NULL;
   char            *value = NULL;
+  int             type = 0;
 
   iter = dbus_get_property(
                       service,
@@ -201,13 +209,21 @@ int dbus_get_property_string(
   
   if (NULL == iter)
     return FAIL;
-  
-  if (DBUS_TYPE_STRING != dbus_message_iter_get_arg_type(iter))
-    return FAIL;
-  
-  dbus_message_iter_get_basic(iter, &value);
-  zbx_strlcpy(s, value, n);
-  return SUCCEED;
+
+  type = dbus_message_iter_get_arg_type(iter);
+  switch (type) {
+  case DBUS_TYPE_STRING:
+    dbus_message_iter_get_basic(iter, &value);
+    zbx_strlcpy(s, value, n);
+    return SUCCEED;
+
+  case DBUS_TYPE_BOOLEAN:
+    dbus_message_iter_get_basic(iter, &value);
+    zbx_strlcpy(s, yes_no(value), n);
+    return SUCCEED;
+  }
+
+  return FAIL;
 }
 
 /*

@@ -1,15 +1,21 @@
 #include "libzbxsystemd.h"
-#include "libzbxcgroups.h"
 
 // pid that initialised the module, before forking workers.
 int mainpid = 0;
 
+// items in this file
 static int SYSTEMD_MODVER(AGENT_REQUEST*, AGENT_RESULT*);
 static int SYSTEMD_MANAGER(AGENT_REQUEST *request, AGENT_RESULT *result);
 static int SYSTEMD_UNIT(AGENT_REQUEST*, AGENT_RESULT*);
 static int SYSTEMD_UNIT_DISCOVERY(AGENT_REQUEST*, AGENT_RESULT*);
 static int SYSTEMD_SERVICE_INFO(AGENT_REQUEST*, AGENT_RESULT*);
 static int SYSTEMD_SERVICE_DISCOVERY(AGENT_REQUEST*, AGENT_RESULT*);
+
+// items in cgroups.c
+int cgroup_init();
+int SYSTEMD_CGROUP_CPU(AGENT_REQUEST*, AGENT_RESULT*);
+int SYSTEMD_CGROUP_DEV(AGENT_REQUEST*, AGENT_RESULT*);
+int SYSTEMD_CGROUP_MEM(AGENT_REQUEST*, AGENT_RESULT*);
 
 ZBX_METRIC *zbx_module_item_list()
 {
@@ -232,6 +238,7 @@ static int SYSTEMD_UNIT_DISCOVERY(AGENT_REQUEST *request, AGENT_RESULT *result)
         dbus_get_property_json(&j, "{#UNIT.FRAGMENTPATH}", value.str, SYSTEMD_UNIT_INTERFACE, "FragmentPath");
         dbus_get_property_json(&j, "{#UNIT.UNITFILESTATE}", value.str, SYSTEMD_UNIT_INTERFACE, "UnitFileState");
         dbus_get_property_json(&j, "{#UNIT.FOLLOWING}", value.str, SYSTEMD_UNIT_INTERFACE, "Following");
+        dbus_get_property_json(&j, "{#UNIT.CONDITIONRESULT}", value.str, SYSTEMD_UNIT_INTERFACE, "ConditionResult");
         zbx_json_close(&j);
         break;
       }
@@ -442,17 +449,17 @@ static int SYSTEMD_SERVICE_DISCOVERY(AGENT_REQUEST *request, AGENT_RESULT *resul
     }
 
     dbus_message_iter_get_basic(&unit, &value);
-    path = value.str;
-    if (!systemd_unit_is_service(path))
+    if (!systemd_unit_is_service(value.str))
       goto next_unit;
 
     // send property values
     zbx_json_addobject(&j, NULL);
     zbx_json_addstring(&j, "{#SERVICE.TYPE}", "service", ZBX_JSON_TYPE_STRING);
-    dbus_get_property_json(&j, "{#SERVICE.NAME}", path, SYSTEMD_UNIT_INTERFACE, "Id");
-    dbus_get_property_json(&j, "{#SERVICE.DISPLAYNAME}", path, SYSTEMD_UNIT_INTERFACE, "Description");
-    dbus_get_property_json(&j, "{#SERVICE.PATH}", path, SYSTEMD_UNIT_INTERFACE, "FragmentPath");
-    dbus_get_property_json(&j, "{#SERVICE.STARTUPNAME}", path, SYSTEMD_UNIT_INTERFACE, "UnitFileState");
+    dbus_get_property_json(&j, "{#SERVICE.NAME}", value.str, SYSTEMD_UNIT_INTERFACE, "Id");
+    dbus_get_property_json(&j, "{#SERVICE.DISPLAYNAME}", value.str, SYSTEMD_UNIT_INTERFACE, "Description");
+    dbus_get_property_json(&j, "{#SERVICE.PATH}", value.str, SYSTEMD_UNIT_INTERFACE, "FragmentPath");
+    dbus_get_property_json(&j, "{#SERVICE.STARTUPNAME}", value.str, SYSTEMD_UNIT_INTERFACE, "UnitFileState");
+    dbus_get_property_json(&j, "{#SERVICE.CONDITIONRESULT}", value.str, SYSTEMD_UNIT_INTERFACE, "ConditionResult");
     zbx_json_close(&j);
 
 next_unit:

@@ -1,4 +1,4 @@
-all: libzbxsystemd.pp
+all-local: libzbxsystemd.pp
 
 libzbxsystemd.mod: libzbxsystemd.te
 	checkmodule -m -M libzbxsystemd.te -o libzbxsystemd.mod

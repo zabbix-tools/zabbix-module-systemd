@@ -23,10 +23,35 @@ if test ! "x$found_zabbix" = "xyes"; then
 fi
 
 # DBUS flags
-DBUS_CPPFLAGS="-I/usr/include/dbus-1.0 -I/usr/lib64/dbus-1.0/include"
-DBUS_LDFLAGS="-ldbus-1"
-AC_SUBST([DBUS_CPPFLAGS])
-AC_SUBST([DBUS_LDFLAGS])
+AC_MSG_CHECKING([for D-Bus libraries])
+DBUS_VERSION="`pkg-config dbus-1 --modversion 2>/dev/null`"
+
+if test -z "$DBUS_VERSION"; then
+  AC_MSG_RESULT([no])
+  AC_MSG_ERROR([D-Bus library not found])
+else
+  DBUS_CPPFLAGS="`pkg-config dbus-1 --cflags`"
+  DBUS_LDFLAGS="`pkg-config dbus-1 --libs`"
+
+  AC_SUBST([DBUS_VERSION])
+  AC_SUBST([DBUS_CPPFLAGS])
+  AC_SUBST([DBUS_LDFLAGS])
+
+  AC_MSG_RESULT([$DBUS_VERSION])
+  AC_DEFINE([HAVE_DBUS], [1], [Define to 1 if D-Bus libraries are available])
+fi
+
+dnl
+dnl Enable selinux module
+dnl
+AC_ARG_ENABLE(semodule,[  --enable-semodule       build SELinux module],
+[case "${enableval}" in
+  yes) semodule=yes ;;
+  no)  semodule=no ;;
+  *) AC_MSG_ERROR([bad value ${enableval} for --enable-semodule]) ;;
+esac],
+[semodule=no])
+AM_CONDITIONAL(SEMODULE, test "x$semodule" = "xyes")
 
 dnl
 dnl output
@@ -52,6 +77,13 @@ Configuration:
 if test "x$ZABBIX_CPPFLAGS" != "x"; then
   echo "    zabbix:              ${ZABBIX_CPPFLAGS}"
 fi
+
+if test "x$DBUS_CPPFLAGS" != "x"; then
+  echo "    d-bus:               ${DBUS_CPPFLAGS}"
+fi
+
+echo "
+  Enable SELinux module: ${semodule}"
 
 echo
 echo "************************************************************"

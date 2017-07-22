@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
+#include <dirent.h>
 
 // string builder
 #include "sb.h"
@@ -16,7 +17,6 @@
 #include <log.h>
 #include <zbxjson.h>
 #include <version.h>
-#include <db.h>
 
 #ifndef MAX
 #define MAX(a, b)     ( (a) < (b) ? (b) : (a) )
