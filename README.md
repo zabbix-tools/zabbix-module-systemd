@@ -13,7 +13,13 @@ The following packages are available:
 ## Install
 
 ```bash
-$ ./configure --with-zabbix=/usr/src/zabbix-3.2.5
+# Required CentOS/RHEL packages:   yum install -y libtool make autoconf automake dbus-devel
+# Required Debian/Ubuntu packages: apt-get install -y libtool make autoconf automake libdbus-1-dev
+# Required Fedora packages:        dnf install -y libtool make autoconf automake dbus-devel
+# Required openSUSE packages:      zypper install -y libtool make autoconf automake dbus-1-devel gcc
+# Zabbix source, use your version: svn export svn://svn.zabbix.com/tags/3.2.7 /usr/src/zabbix
+$ ./autogen.sh
+$ ./configure --with-zabbix=/usr/src/zabbix
 $ make
 $ sudo make install
 ```
