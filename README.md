@@ -26,7 +26,7 @@ make
 sudo make install
 ```
 
-If you are using a packaged version of Zabbix, you may with to redirect the
+If you are using a packaged version of Zabbix, you may wish to redirect the
 installation directories as follows:
 
 ```bash
@@ -35,7 +35,7 @@ sudo make prefix=/usr sysconfdir=/etc libdir=/usr/lib64 install
 
 ## Available keys
 
-Note: `systemd.cgroup.*` keys require cgroup accounting. The system default
+Note: `systemd.cgroup.*` keys require the cgroup accounting. The system default
 for this setting may be controlled with `Default*Accounting` settings in
 [systemd-system.conf](https://www.freedesktop.org/software/systemd/man/systemd-system.conf.html).
 
@@ -65,7 +65,7 @@ systemctl restart zabbix-agent
 
 Available examples of monitoring templates:
 
-- [Template App systemd services.xml](https://raw.githubusercontent.com/cavaliercoder/zabbix-module-systemd/master/templates/Template%20App%20systemd%20services.xml) - discovery of enabled systemd serviced with True condition result.
+- [Template App systemd services.xml](https://raw.githubusercontent.com/cavaliercoder/zabbix-module-systemd/master/templates/Template%20App%20systemd%20services.xml) - the discovery of enabled systemd serviced with True condition result
 
 ## Examples
 
@@ -153,10 +153,13 @@ $ gdbus introspect --system --dest org.freedesktop.systemd1 --object-path \
       readonly b ConditionResult = true;
 $ busctl introspect org.freedesktop.systemd1 /org/freedesktop/systemd1/unit/sshd_2eservice \
   | grep ConditionResult
-.ConditionResult                    property  b              true                                     emits-change
+.ConditionResult                    property  b              true               emits-change
 $ zabbix_get -k systemd.unit[sshd.service,Unit,ConditionResult]
 1
 ```
+
+Enable `DebugLevel=5` in the Zabbix agent config to see systemd module debug
+output in the zabbix-agent log file.
 
 ## SELinux
 
@@ -168,7 +171,7 @@ error in your Zabbix logs, when attempting to use item keys from this module:
 ```
 
 This is because the SELinux policy that ships with RedHat/CentOS does not
-explicitely allow the Zabbix agent to communicate with D-Bus. This package
+explicitly allow the Zabbix agent to communicate with D-Bus. This package
 includes an extension module to grant Zabbix only the permissions it requires
 for read-only access.
 
