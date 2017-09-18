@@ -33,6 +33,9 @@ installation directories as follows:
 sudo make prefix=/usr sysconfdir=/etc libdir=/usr/lib64 install
 ```
 
+[Configure Zabbix agent to load module](https://www.zabbix.com/documentation/3.4/manual/config/items/loadablemodules)
+`libzbxsystemd.so`.
+
 ## Available keys
 
 Note: `systemd.cgroup.*` keys require the cgroup accounting. The system default
@@ -65,7 +68,7 @@ systemctl restart zabbix-agent
 
 Available examples of monitoring templates:
 
-- [Template App systemd services.xml](https://raw.githubusercontent.com/cavaliercoder/zabbix-module-systemd/master/templates/Template%20App%20systemd%20services.xml) - the discovery of enabled systemd serviced with True condition result
+- [Template App systemd services.xml](https://raw.githubusercontent.com/cavaliercoder/zabbix-module-systemd/master/templates/Template%20App%20systemd%20services.xml) - the discovery of enabled systemd services with True condition result
 
 ## Examples
 
