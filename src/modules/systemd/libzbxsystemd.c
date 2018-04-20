@@ -49,8 +49,9 @@ int zbx_module_init()
 }
 
 int zbx_module_uninit()
-{ 
-  dbus_connection_unref(conn);
+{
+  if (NULL != conn)
+    dbus_connection_unref(conn);
   return ZBX_MODULE_OK;
 }
 
