@@ -19,7 +19,8 @@ The following packages are available:
 # Required openSUSE apps:      zypper install -y libtool make autoconf automake dbus-1-devel gcc
 # Required Gentoo apps 1:      emerge sys-devel/libtool sys-devel/make sys-devel/autoconf
 # Required Gentoo apps 2:      emerge sys-devel/automake sys-devel/gcc
-# Source, use your version:    svn export svn://svn.zabbix.com/tags/3.2.7 /usr/src/zabbix
+# Source, use your version:    
+# git clone https://git.zabbix.com/scm/zbx/zabbix.git --depth 1 --single-branch --branch 4.2.6 /usr/src/zabbix
 ./autogen.sh
 ./configure --with-zabbix=/usr/src/zabbix
 make
