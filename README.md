@@ -21,6 +21,7 @@ The following packages are available:
 # Required Gentoo apps 2:      emerge sys-devel/automake sys-devel/gcc
 # Source, use your version:    
 # git clone https://git.zabbix.com/scm/zbx/zabbix.git --depth 1 --single-branch --branch 4.2.6 /usr/src/zabbix
+# Generate config.h: bash -c "cd /usr/src/zabbix; ./bootstrap.sh; ./configure"
 ./autogen.sh
 ./configure --with-zabbix=/usr/src/zabbix
 make
@@ -193,3 +194,10 @@ enabled by running:
 ```bash
 semodule -v -i /usr/share/selinux/packages/zabbix-module-systemd/libzbxsystemd.pp
 ```
+
+## Built-in Zabbix systemd support
+
+Zabbix agent 2 supports systemd from version 4.4+ ([ZBXNEXT-2871](https://support.zabbix.com/browse/ZBXNEXT-2871)).
+Keys: `systemd.unit.discovery`, `systemd.unit.info`. However this module still
+offers more options for systemd monitoring.
+
