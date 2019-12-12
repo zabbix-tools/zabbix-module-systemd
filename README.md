@@ -1,4 +1,4 @@
-# Native Zabbix systemd monitoring [![Build Status](https://travis-ci.org/cavaliercoder/zabbix-module-systemd.svg?branch=master)](https://travis-ci.org/cavaliercoder/zabbix-module-systemd)
+# Native Zabbix systemd monitoring [![Build Status](https://travis-ci.org/kmonticolo/zabbix-module-systemd.svg?branch=master)](https://travis-ci.org/cavaliercoder/zabbix-module-systemd)
 
 Zabbix module that enables Zabbix to query the systemd D-Bus API for native and
 granular system state monitoring + relative cgroup (CPU, MEM, IO, ...) metrics.
@@ -47,9 +47,9 @@ for this setting may be controlled with `Default*Accounting` settings in
 Example how to enable cgroup accounting for Zabbix systemd monitoring:
 
 ```bash
-sed -i -e "s/.*DefaultCPUAccounting=.*/DefaultCPUAccounting=yes/g" /etc/systemd/system.conf
-sed -i -e "s/.*DefaultBlockIOAccounting=.*/DefaultBlockIOAccounting=yes/g" /etc/systemd/system.conf
-sed -i -e "s/.*DefaultMemoryAccounting=.*/DefaultMemoryAccounting=yes/g" /etc/systemd/system.conf
+sed -i "s/.*DefaultCPUAccounting=.*/DefaultCPUAccounting=yes/g" /etc/systemd/system.conf
+sed -i "s/.*DefaultBlockIOAccounting=.*/DefaultBlockIOAccounting=yes/g" /etc/systemd/system.conf
+sed -i "s/.*DefaultMemoryAccounting=.*/DefaultMemoryAccounting=yes/g" /etc/systemd/system.conf
 systemctl daemon-reexec
 systemctl restart zabbix-agent
 ```
