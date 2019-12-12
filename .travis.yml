@@ -1,8 +1,4 @@
-dist: 
-   - trusty # required for D-Bus >= 1.6
-   - xenial
-   - bionic
-   
+dist:  bionic
 os: linux
 language: c
 
