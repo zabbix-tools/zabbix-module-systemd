@@ -1,5 +1,9 @@
-dist: trusty # required for D-Bus >= 1.6
-sudo: false
+dist: 
+   - trusty # required for D-Bus >= 1.6
+   - xenial
+   - bionic
+   
+os: linux
 language: c
 
 env:
