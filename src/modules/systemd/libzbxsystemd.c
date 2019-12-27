@@ -178,17 +178,20 @@ static int SYSTEMD_UNIT_DISCOVERY(AGENT_REQUEST *request, AGENT_RESULT *result)
 
   if (NULL == (msg = dbus_exchange_message(msg))) {
     SET_MSG_RESULT(result, strdup("failed to list units"));
+    dbus_message_unref(msg);
     return res;
   }
 
   // check result message
   if (!dbus_message_iter_init(msg, &args)) {
     zabbix_log(LOG_LEVEL_ERR, LOG_PREFIX "no value returned");
+    dbus_message_unref(msg);
     return res;
   }
   
   if (DBUS_TYPE_ARRAY != dbus_message_iter_get_arg_type(&args)) {
     zabbix_log(LOG_LEVEL_ERR, LOG_PREFIX "returned value is not an array");
+    dbus_message_unref(msg);
     return res;
   }
   
@@ -420,17 +423,20 @@ static int SYSTEMD_SERVICE_DISCOVERY(AGENT_REQUEST *request, AGENT_RESULT *resul
 
   if (NULL == (msg = dbus_exchange_message(msg))) {
     SET_MSG_RESULT(result, strdup("failed to list units"));
+    dbus_message_unref(msg);
     return res;
   }
 
   // check result message
   if (!dbus_message_iter_init(msg, &args)) {
     zabbix_log(LOG_LEVEL_ERR, LOG_PREFIX "no value returned");
+    dbus_message_unref(msg);
     return res;
   }
   
   if (DBUS_TYPE_ARRAY != dbus_message_iter_get_arg_type(&args)) {
     zabbix_log(LOG_LEVEL_ERR, LOG_PREFIX "returned value is not an array");
+    dbus_message_unref(msg);
     return res;
   }
   
@@ -446,6 +452,7 @@ static int SYSTEMD_SERVICE_DISCOVERY(AGENT_REQUEST *request, AGENT_RESULT *resul
     dbus_message_iter_next_n(&unit, 6);
     if (DBUS_TYPE_INVALID == (type = dbus_message_iter_get_arg_type(&unit))) {
       zabbix_log(LOG_LEVEL_ERR, LOG_PREFIX "unexpected value type");
+      dbus_message_unref(msg);
       goto next_unit;
     }
 
