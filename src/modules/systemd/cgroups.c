@@ -58,6 +58,7 @@ int     cgroup_init()
                     zabbix_log(LOG_LEVEL_DEBUG, LOG_PREFIX "cpu_cgroup is cpuacct");
                 }
 
+                free(ddir);
                 pclose(fp);
                 return SYSINFO_RET_OK;
             }

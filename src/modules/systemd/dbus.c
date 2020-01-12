@@ -79,17 +79,20 @@ DBusMessage *dbus_exchange_message(DBusMessage *msg) {
 
   if (NULL == msg) {
     zabbix_log(LOG_LEVEL_ERR, LOG_PREFIX "message is null");
+    dbus_message_unref(msg);
     return NULL;
   }
   
   // send message
   if (!dbus_connection_send_with_reply (conn, msg, &pending, timeout)) {
     zabbix_log(LOG_LEVEL_ERR, LOG_PREFIX "oom sending message");
+    dbus_message_unref(msg);
     return NULL;
   }
   
   if (NULL == pending) {
     zabbix_log(LOG_LEVEL_ERR, LOG_PREFIX "pending message is null");
+    dbus_message_unref(msg);
     return NULL;
   }
 
@@ -101,13 +104,16 @@ DBusMessage *dbus_exchange_message(DBusMessage *msg) {
   msg = dbus_pending_call_steal_reply(pending);
   if (NULL == msg) {
     zabbix_log(LOG_LEVEL_ERR, LOG_PREFIX "returned message is null");
+    dbus_message_unref(msg);
     return NULL;
   }
   dbus_pending_call_unref(pending);
 
   // check for errors
-  if (dbus_check_error(msg))
-    return NULL;
+  if (dbus_check_error(msg)){
+      dbus_message_unref(msg);
+      return NULL;
+  }
 
   return msg;
 }
@@ -150,14 +156,20 @@ DBusMessageIter* dbus_get_property(
   }
 
   dbus_message_iter_init_append(msg, &args);
-  if (!dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &interface))
+  if (!dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &interface)){
+    dbus_message_unref(msg);
     return NULL;
+  }
 
-  if (!dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &property))
+  if (!dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &property)){
+    dbus_message_unref(msg);
     return NULL;
+  }
 
-  if (NULL == (msg = dbus_exchange_message(msg)))
+  if (NULL == (msg = dbus_exchange_message(msg))){
+    dbus_message_unref(msg);
     return NULL;
+  }
 
   // check type
   if (!dbus_message_iter_init(msg, &args)) {
@@ -207,21 +219,27 @@ int dbus_get_property_string(
                       interface,
                       property);
   
-  if (NULL == iter)
+  if (NULL == iter){
+    zbx_free(iter);
     return FAIL;
+  }
 
   type = dbus_message_iter_get_arg_type(iter);
   switch (type) {
   case DBUS_TYPE_STRING:
     dbus_message_iter_get_basic(iter, &value);
     zbx_strlcpy(s, value, n);
+    zbx_free(iter);
     return SUCCEED;
 
   case DBUS_TYPE_BOOLEAN:
     dbus_message_iter_get_basic(iter, &value);
     zbx_strlcpy(s, yes_no(value), n);
+    zbx_free(iter);
     return SUCCEED;
   }
+
+  zbx_free(iter);
 
   return FAIL;
 }
@@ -282,6 +300,7 @@ int dbus_marshall_property(
 
   if (NULL == iter) {
     SET_MSG_RESULT(result, strdup("failed to get property"));
+    zbx_free(iter);
     return SYSINFO_RET_FAIL;
   }
   
@@ -332,6 +351,7 @@ int dbus_marshall_property(
     return SYSINFO_RET_OK;
   }
 
+  zbx_free(iter);
   SET_MSG_RESULT(result, zbx_dsprintf(NULL, "unsupported value type: %c", type));
   return SYSINFO_RET_FAIL;
 }
