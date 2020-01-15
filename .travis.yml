@@ -1,8 +1,11 @@
-dist: trusty # required for D-Bus >= 1.6
-sudo: false
+dist:  bionic
+os: linux
 language: c
 
 env:
+  - ZABBIX_VERSION=4.4.3
+  - ZABBIX_VERSION=4.2.8
+  - ZABBIX_VERSION=4.0.10
   - ZABBIX_VERSION=3.4.8
   - ZABBIX_VERSION=3.2.11
   - ZABBIX_VERSION=3.0.16
