@@ -44,25 +44,21 @@ int systemd_get_unit(char *s, size_t n, const char* unit)
   
   dbus_message_iter_init_append(msg, &args);
   if (!dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &c)){
-    dbus_message_unref(msg);
     return FAIL;
   }
 
   if (NULL == (msg = dbus_exchange_message(msg))){
-    dbus_message_unref(msg);
     return FAIL;
   }
 
   // read value
   if (!dbus_message_iter_init(msg, &args)) {
     zabbix_log(LOG_LEVEL_ERR, LOG_PREFIX "message has no arguments");
-    dbus_message_unref(msg);
     return FAIL;
   }
   
   if (DBUS_TYPE_OBJECT_PATH != (type = dbus_message_iter_get_arg_type(&args))) {
     zabbix_log(LOG_LEVEL_ERR, LOG_PREFIX "argument is not an object path: %c", type);
-    dbus_message_unref(msg);
     return FAIL;
   }
   

@@ -104,16 +104,13 @@ DBusMessage *dbus_exchange_message(DBusMessage *msg) {
   msg = dbus_pending_call_steal_reply(pending);
   if (NULL == msg) {
     zabbix_log(LOG_LEVEL_ERR, LOG_PREFIX "returned message is null");
-    dbus_message_unref(msg);
     return NULL;
   }
   dbus_pending_call_unref(pending);
 
   // check for errors
-  if (dbus_check_error(msg)){
-      dbus_message_unref(msg);
+  if (dbus_check_error(msg))
       return NULL;
-  }
 
   return msg;
 }
