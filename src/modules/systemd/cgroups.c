@@ -85,7 +85,7 @@ int     cgroup_init()
 int     SYSTEMD_CGROUP_MEM(AGENT_REQUEST *request, AGENT_RESULT *result)
 {
         zabbix_log(LOG_LEVEL_DEBUG, LOG_PREFIX "in cgroup_mem(()");
-        char    *unit, *metric;
+        char    *unit, *metric, *template, *instance;
         int     ret = SYSINFO_RET_FAIL;
 
         if (2 != request->nparam)
@@ -106,13 +106,32 @@ int     SYSTEMD_CGROUP_MEM(AGENT_REQUEST *request, AGENT_RESULT *result)
         metric = get_rparam(request, 1);
         char    *stat_file = "/memory.stat";
         char    *cgroup = "memory/system.slice/";
-        size_t  filename_size = strlen(cgroup) + strlen(unit) + strlen(cgroup_dir) + strlen(stat_file) + 2;
+        char    *part1 = "system-";
+        char    *part2 = ".slice/";
+
+        zbx_strsplit(unit, '@', &template, &instance);
+
+        size_t filename_size = strlen(cgroup_dir) + strlen(cgroup) + strlen(part1) + strlen(template) + strlen(part2) + strlen(unit) + strlen(stat_file) + 2;
         char    *filename = malloc(filename_size);
-        zbx_strlcpy(filename, cgroup_dir, filename_size);  // /sys/fs/cgroup/
-        zbx_strlcat(filename, cgroup, filename_size);      // /sys/fs/cgroup/memory/system.slice/
-        zbx_strlcat(filename, unit, filename_size);        // /sys/fs/cgroup/memory/system.slice/dbus.service
-        zbx_strlcat(filename, stat_file, filename_size);   // /sys/fs/cgroup/memory/system.slice/dbus.service/memory.stat
-        zabbix_log(LOG_LEVEL_DEBUG, LOG_PREFIX "metric source file: %s", filename);
+
+        if (instance == NULL) {
+            zbx_strlcpy(filename, cgroup_dir, filename_size);  // /sys/fs/cgroup/
+            zbx_strlcat(filename, cgroup, filename_size);      // /sys/fs/cgroup/memory/system.slice/
+            zbx_strlcat(filename, unit, filename_size);        // /sys/fs/cgroup/memory/system.slice/dbus.service
+            zbx_strlcat(filename, stat_file, filename_size);   // /sys/fs/cgroup/memory/system.slice/dbus.service/memory.stat
+            zabbix_log(LOG_LEVEL_ERR, LOG_PREFIX "metric source file: %s", filename);
+        }
+        else {
+            zbx_strlcpy(filename, cgroup_dir, filename_size);  // /sys/fs/cgroup/
+            zbx_strlcat(filename, cgroup, filename_size);      // /sys/fs/cgroup/memory/system.slice/
+            zbx_strlcat(filename, part1, filename_size);        // /sys/fs/cgroup/memory/system.slice/system-
+            zbx_strlcat(filename, template, filename_size);    // /sys/fs/cgroup/memory/system.slice/system-dbus
+            zbx_strlcat(filename, part2, filename_size);       // /sys/fs/cgroup/memory/system.slice/system-dbus.slice
+            zbx_strlcat(filename, unit, filename_size);        // /sys/fs/cgroup/memory/system.slice/system-dbus.slice/dbus.service
+            zbx_strlcat(filename, stat_file, filename_size);   // /sys/fs/cgroup/memory/system.slice/system-dbus.slice/dbus.service/memory.stat
+            zabbix_log(LOG_LEVEL_ERR, LOG_PREFIX "metric source file: %s", filename);
+        }
+
         FILE    *file;
         if (NULL == (file = fopen(filename, "r")))
         {
