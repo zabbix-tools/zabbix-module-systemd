@@ -211,7 +211,7 @@ static int SYSTEMD_UNIT_DISCOVERY(AGENT_REQUEST *request, AGENT_RESULT *result)
       switch (i) {
       case 0:
         // filter by unit type
-        if(NULL != filter || '\0' != filter)
+        if(NULL != filter && '\0' != *filter)
           if(0 == systemd_cmptype(value.str, filter))
             goto next_unit;
 
